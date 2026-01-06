@@ -1,0 +1,178 @@
+/**
+ * Authentication Routes
+ * Login, register, token refresh
+ */
+
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User.model');
+const router = express.Router();
+
+/**
+ * Register new user
+ * POST /api/auth/register
+ */
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required',
+      });
+    }
+    
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists',
+      });
+    }
+    
+    // Create user (password stored as plain text for demo)
+    const user = await User.create({
+      name,
+      email,
+      password, // In production, hash this
+      role: 'USER',
+      balance: 0,
+    });
+    
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET || 'demo-secret',
+      { expiresIn: '30d' }
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          balance: user.balance,
+          role: user.role,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * Login
+ * POST /api/auth/login
+ */
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required',
+      });
+    }
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+    
+    // Check password (plain text comparison for demo)
+    if (user.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+    
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET || 'demo-secret',
+      { expiresIn: '30d' }
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          balance: user.balance,
+          role: user.role,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * Verify token
+ * GET /api/auth/verify
+ */
+router.get('/verify', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1] || req.query.token;
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided',
+      });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          balance: user.balance,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: 'Invalid token',
+    });
+  }
+});
+
+module.exports = router;
+
