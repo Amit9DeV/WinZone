@@ -69,3 +69,4 @@ predictionQuestionSchema.index({ lockTime: 1 });
 
 module.exports = mongoose.model('PredictionQuestion', predictionQuestionSchema);
 
+

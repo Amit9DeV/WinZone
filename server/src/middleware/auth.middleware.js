@@ -12,24 +12,37 @@ const User = require('../models/User.model');
 const authenticate = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1] || req.query.token;
-    
+
     if (!token) {
       return res.status(401).json({
         success: false,
         message: 'No token provided',
       });
     }
-    
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
+
+    if (decoded.role === 'ADMIN') {
+      req.user = {
+        _id: 'admin',
+        name: 'Admin',
+        email: process.env.ADMIN_USERNAME || 'admin',
+        role: 'ADMIN',
+        balance: 0
+      };
+      req.userId = 'admin';
+      return next();
+    }
+
     const user = await User.findById(decoded.userId);
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
         message: 'User not found',
       });
     }
-    
+
     req.user = user;
     req.userId = user._id.toString();
     next();
@@ -56,4 +69,5 @@ const isAdmin = (req, res, next) => {
 };
 
 module.exports = { authenticate, isAdmin };
+
 

@@ -229,5 +229,45 @@ router.get('/activity', async (req, res) => {
 
 
 
+/**
+ * Get user bet history (generic)
+ * GET /api/users/bets
+ */
+router.get('/bets', async (req, res) => {
+  try {
+    const Bet = require('../models/Bet.model');
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const bets = await Bet.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .skip(skip) // Pagination
+      .limit(limit)
+      .lean();
+
+    const total = await Bet.countDocuments({ userId: req.userId });
+
+    res.json({
+      success: true,
+      data: {
+        bets,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
+
 

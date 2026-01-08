@@ -18,7 +18,7 @@ const walletService = {
     }
     return user.balance;
   },
-  
+
   /**
    * Update user balance (internal use)
    * @param {string} userId - User ID
@@ -31,15 +31,15 @@ const walletService = {
     if (!user) {
       throw new Error('User not found');
     }
-    
+
     const newBalance = user.balance + amount;
     if (newBalance < 0) {
       throw new Error('Insufficient balance');
     }
-    
+
     user.balance = newBalance;
     await user.save();
-    
+
     // Log activity
     await UserActivity.create({
       userId,
@@ -51,10 +51,10 @@ const walletService = {
       payout: 0,
       balanceAfter: newBalance,
     });
-    
+
     return user;
   },
-  
+
   /**
    * Request balance (user creates request, admin approves)
    */
@@ -62,16 +62,16 @@ const walletService = {
     if (amount <= 0) {
       throw new Error('Amount must be greater than 0');
     }
-    
+
     const request = await WalletRequest.create({
       userId,
       amount,
       status: 'PENDING',
     });
-    
+
     return request;
   },
-  
+
   /**
    * Approve wallet request (admin only)
    */
@@ -80,28 +80,28 @@ const walletService = {
     if (!request) {
       throw new Error('Request not found');
     }
-    
+
     if (request.status !== 'PENDING') {
       throw new Error('Request already processed');
     }
-    
+
     // Update balance
     await this.updateBalance(
       request.userId,
       request.amount,
       `Wallet request approved: ${request.amount}`
     );
-    
+
     // Update request
     request.status = 'APPROVED';
     request.processedBy = adminId;
     request.processedAt = new Date();
     request.adminNotes = notes;
     await request.save();
-    
+
     return request;
   },
-  
+
   /**
    * Reject wallet request (admin only)
    */
@@ -110,20 +110,20 @@ const walletService = {
     if (!request) {
       throw new Error('Request not found');
     }
-    
+
     if (request.status !== 'PENDING') {
       throw new Error('Request already processed');
     }
-    
+
     request.status = 'REJECTED';
     request.processedBy = adminId;
     request.processedAt = new Date();
     request.adminNotes = notes;
     await request.save();
-    
+
     return request;
   },
-  
+
   /**
    * Get pending requests
    */
@@ -132,7 +132,7 @@ const walletService = {
       .populate('userId', 'name email')
       .sort({ createdAt: -1 });
   },
-  
+
   /**
    * Get user's wallet requests
    */
@@ -140,7 +140,19 @@ const walletService = {
     return WalletRequest.find({ userId })
       .sort({ createdAt: -1 });
   },
+
+  /**
+   * Get request history (Approved/Rejected)
+   */
+  async getRequestHistory() {
+    return WalletRequest.find({ status: { $in: ['APPROVED', 'REJECTED'] } })
+      .populate('userId', 'name email')
+      .populate('processedBy', 'name')
+      .sort({ processedAt: -1 })
+      .limit(100);
+  },
 };
 
 module.exports = walletService;
+
 

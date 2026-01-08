@@ -114,8 +114,8 @@ const TopHistory = () => {
                           <span>
                             Bet,{" "}
                             {`${userInfo?.currency
-                                ? userInfo?.currency
-                                : "INR"
+                              ? userInfo?.currency
+                              : "INR"
                               }`}
                             :&nbsp;
                           </span>
@@ -131,10 +131,10 @@ const TopHistory = () => {
                         </div>
                         <span
                           className={`amount cashout ${Number(item.cashoutAt) < 2
-                              ? "blue"
-                              : Number(item.cashoutAt) < 10
-                                ? "purple"
-                                : "big"
+                            ? "blue"
+                            : Number(item.cashoutAt) < 10
+                              ? "purple"
+                              : "big"
                             }`}
                         >
                           {Number(item.cashoutAt).toFixed(2)}x
@@ -148,8 +148,8 @@ const TopHistory = () => {
                           <span>
                             Win,{" "}
                             {`${userInfo?.currency
-                                ? userInfo?.currency
-                                : "INR"
+                              ? userInfo?.currency
+                              : "INR"
                               }`}
                             : &nbsp;
                           </span>

@@ -542,10 +542,12 @@ $btn-color: linear-gradient (90deg, rgb(43, 35, 87) 0%, rgb(43, 35, 87) 100%);
   cursor: pointer;
   border-radius: 10px;
   border: none;
-  &.add{
+
+  &.add {
     background: #427f00 url('../../assets/images/plus-1.svg') no-repeat center center;
   }
-  &.minus{
+
+  &.minus {
     background: #427f00 url('../../assets/images/remove.svg') no-repeat center center;
   }
 }

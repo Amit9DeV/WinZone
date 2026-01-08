@@ -182,7 +182,7 @@ const Bet = ({ index, add, setAdd }: BetProps) => {
 	useEffect(() => {
 		if (betted) {
 			if (autoCashoutState) {
-				if (cashOut < currentSecondNum) {
+				if (currentSecondNum >= cashOut) {
 					updateUserBetState({ [`${index}betted`]: false });
 					callCashOut(cashOut, index);
 				}
@@ -192,7 +192,7 @@ const Bet = ({ index, add, setAdd }: BetProps) => {
 
 	useEffect(() => {
 		setMyBetAmount(betAmount);
-	},[betAmount])
+	}, [betAmount])
 
 	return (
 		<div className="bet-control">
@@ -273,11 +273,11 @@ const Bet = ({ index, add, setAdd }: BetProps) => {
 					</div>
 					<div className="buttons-block">
 						{betted ? GameState === "PLAYING" ?
-							<button className="btn-waiting" onClick={() => { callCashOut(currentTarget, index) }}>
+							<button className="btn-waiting" onClick={() => { callCashOut(currentNum, index) }}>
 								<span>
 									<label>CASHOUT</label>
 									<label className="amount">
-										<span>{Number(betAmount * currentTarget).toFixed(2)}</span>
+										<span>{Number(betAmount * currentNum).toFixed(2)}</span>
 										<span className="currency">INR</span>
 									</label>
 								</span>

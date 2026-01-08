@@ -13,13 +13,13 @@ let io = null;
  * @returns {Server} Socket.IO server instance
  */
 const initSocket = (server) => {
-  const corsOrigins = process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGINS.split(',') 
-    : ['http://localhost:3000', 'http://localhost:3001'];
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://192.168.16.101:3000'];
 
   io = new Server(server, {
     cors: {
-      origin: corsOrigins,
+      origin: true, // Allow ANY origin
       methods: ['GET', 'POST'],
       credentials: true,
     },

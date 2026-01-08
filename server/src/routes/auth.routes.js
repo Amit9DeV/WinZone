@@ -15,14 +15,14 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    
+
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Name, email, and password are required',
       });
     }
-    
+
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -31,7 +31,7 @@ router.post('/register', async (req, res) => {
         message: 'User already exists',
       });
     }
-    
+
     // Create user (password stored as plain text for demo)
     const user = await User.create({
       name,
@@ -40,14 +40,14 @@ router.post('/register', async (req, res) => {
       role: 'USER',
       balance: 0,
     });
-    
+
     // Generate token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'demo-secret',
       { expiresIn: '30d' }
     );
-    
+
     res.json({
       success: true,
       data: {
@@ -76,14 +76,40 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required',
+        message: 'Email/Username and password are required',
       });
     }
-    
+
+    // Check for Admin Login
+    const adminUser = process.env.ADMIN_USERNAME || 'admin';
+    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+
+    if (email === adminUser && password === adminPass) {
+      const token = jwt.sign(
+        { userId: 'admin', role: 'ADMIN' },
+        process.env.JWT_SECRET || 'demo-secret',
+        { expiresIn: '1d' }
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          user: {
+            id: 'admin',
+            name: 'Admin',
+            email: adminUser,
+            balance: 0,
+            role: 'ADMIN',
+          },
+          token,
+        },
+      });
+    }
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
@@ -92,7 +118,7 @@ router.post('/login', async (req, res) => {
         message: 'Invalid credentials',
       });
     }
-    
+
     // Check password (plain text comparison for demo)
     if (user.password !== password) {
       return res.status(401).json({
@@ -100,14 +126,14 @@ router.post('/login', async (req, res) => {
         message: 'Invalid credentials',
       });
     }
-    
+
     // Generate token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'demo-secret',
       { expiresIn: '30d' }
     );
-    
+
     res.json({
       success: true,
       data: {
@@ -136,24 +162,40 @@ router.post('/login', async (req, res) => {
 router.get('/verify', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1] || req.query.token;
-    
+
     if (!token) {
       return res.status(401).json({
         success: false,
         message: 'No token provided',
       });
     }
-    
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
+
+    if (decoded.role === 'ADMIN') {
+      return res.json({
+        success: true,
+        data: {
+          user: {
+            id: 'admin',
+            name: 'Admin',
+            email: process.env.ADMIN_USERNAME || 'admin',
+            balance: 0,
+            role: 'ADMIN',
+          },
+        },
+      });
+    }
+
     const user = await User.findById(decoded.userId);
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
         message: 'User not found',
       });
     }
-    
+
     res.json({
       success: true,
       data: {
@@ -175,4 +217,5 @@ router.get('/verify', async (req, res) => {
 });
 
 module.exports = router;
+
 

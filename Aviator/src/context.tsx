@@ -293,6 +293,15 @@ export const Provider = ({ children }: any) => {
     maxBet: 1000,
     minBet: 1,
   });
+
+  // Chat State
+  const [msgData, setMsgData] = React.useState<any[]>([]);
+  const [msgTab, setMsgTab] = React.useState(false);
+  const [msgReceived, setMsgReceived] = React.useState(false);
+
+  const toggleMsgTab = () => {
+    setMsgTab(!msgTab);
+  };
   React.useEffect(function () {
     unityContext.on("GameController", function (message) {
       if (message === "Ready") {
@@ -481,10 +490,23 @@ export const Provider = ({ children }: any) => {
 
     socketInstance.on("error", (data: any) => {
       console.error('Socket error:', data);
-      setUserBetState({
-        ...userBetState,
-        [`${data.index}betted`]: false,
-      });
+
+      // Fix Bug #6: Safely handle missing index/type
+      const betType = data.index || data.type;
+
+      if (betType === 'f' || betType === 's') {
+        setUserBetState(prev => ({
+          ...prev,
+          [`${betType}betted`]: false,
+          [`${betType}betState`]: false
+        }));
+      } else {
+        // If type is unknown, just reset both to be safe? 
+        // No, better to leave them as is to avoid phantom resets.
+        // Or we could try to determine based on logic, but for now just logging it.
+        console.warn('Received error without valid type/index, cannot reset bet state automatically.');
+      }
+
       toast.error(data.message || 'An error occurred');
     });
 
@@ -529,10 +551,39 @@ export const Provider = ({ children }: any) => {
         socketInstance.off("recharge");
         socketInstance.off("error");
         socketInstance.off("success");
+        socketInstance.off("success");
         socketInstance.off("cashout:success");
+        socketInstance.off("msg:new");
       }
     };
   }, [socketInstance, token]);
+
+  // Listen for new messages separately to depend on msgData state if needed, 
+  // or use functional state update
+  React.useEffect(() => {
+    if (!socketInstance) return;
+
+    socketInstance.on('msg:new', (newMsg: any) => {
+      console.log('📨 New message received:', newMsg);
+      // Append new message to list
+      setMsgData(currentMsgs => [newMsg, ...currentMsgs]);
+      // Note: The UI maps keys by index, so order matters. 
+      // Chat usually shows newest at bottom? 
+      // The CSS/HTML structure suggests standard list. 
+      // Check Chat/index.tsx map... it just maps.
+      // Chat history API calls .sort({ createdAt: -1 }), so newest first? 
+      // If UI shows newest at bottom, we should PREPEND or APPEND depending on flex-direction.
+      // Assuming standard "newest at bottom" for chat apps, but "newest at top" for feeds.
+      // API returns recent chats desc (newest first). 
+      // If Chat UI renders top-to-bottom, then [new, ...old] puts new at top.
+      // If Chat UI is `flex-direction: column-reverse`, then new at top is physically at bottom.
+      // Let's assume [new, ...old] matches the API data order.
+    });
+
+    return () => {
+      socketInstance.off('msg:new');
+    };
+  }, [socketInstance]);
 
   React.useEffect(() => {
     let attrs = state;
@@ -603,7 +654,7 @@ export const Provider = ({ children }: any) => {
         setUserBetState(betStatus);
       }
     }
-  }, [gameState.GameState, userBetState.fbetState, userBetState.sbetState]);
+  }, [gameState.GameState, userBetState.fbetState, userBetState.sbetState, state.userInfo.f.betAmount, state.userInfo.s.betAmount]);
 
   const getMyBets = async () => {
     try {
@@ -695,12 +746,12 @@ export const Provider = ({ children }: any) => {
         history: [...history],
         userInfo: state.userInfo,
         socket: socketInstance,
-        msgTab: false,
-        msgReceived: false,
-        setMsgReceived: () => { },
-        msgData: [],
-        setMsgData: () => { },
-        toggleMsgTab: () => { },
+        msgTab,
+        msgReceived,
+        setMsgReceived,
+        msgData,
+        setMsgData,
+        toggleMsgTab,
         handleChangeUserSeed: () => { },
         updateUserInfo: () => { },
         handleGetSeed: () => { },

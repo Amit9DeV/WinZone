@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.16.101:50001/api';
 
 // Create axios instance
 const api = axios.create({
@@ -55,6 +55,17 @@ export const userAPI = {
   getStats: () => api.get('/users/stats'),
   getGameStats: (gameId) => api.get(`/users/stats/${gameId}`),
   getActivity: (params) => api.get('/users/activity', { params }),
+  getTopBets: (period = 'day') => api.get(`/users/get-${period}-history`),
+  getBets: (params) => api.get('/users/bets', { params }),
+  uploadAvatar: (formData) => {
+    return axios.post(`${API_BASE_URL}/user/upload-avatar`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+  },
+  deleteAvatar: () => api.delete('/user/delete-avatar'),
 };
 
 // Wallet APIs
@@ -87,4 +98,5 @@ export const adminAPI = {
 };
 
 export default api;
+
 

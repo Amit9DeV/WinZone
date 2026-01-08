@@ -56,3 +56,4 @@ userGameStatsSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
 module.exports = mongoose.model('UserGameStats', userGameStatsSchema);
 
+

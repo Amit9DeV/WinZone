@@ -101,22 +101,42 @@ function initializeAviatorSockets(io, gameEngine) {
           return socket.emit('error', { message: 'Authentication required' });
         }
 
+
         const { betAmount, target, type = 'f', auto = false } = data;
 
         if (!betAmount || betAmount <= 0) {
-          return socket.emit('error', { message: 'Invalid bet amount' });
+          return socket.emit('error', { message: 'Invalid bet amount', type });
         }
 
         // Check if game is in betting phase
         const state = gameEngine.getCurrentState();
-        if (state.status !== 'WAITING') {
-          return socket.emit('error', { message: 'Betting phase not active' });
+
+        // Fix: Allow bets if WAITING or if just started FLYING (Grace period for latency)
+        // logic: if status is waiting OR (status is flying AND multiplier is still very low < 1.1)
+        const isBettingPhase =
+          state.status === 'WAITING' ||
+          (state.status === 'FLYING' && state.currentMultiplier <= 1.1);
+
+        if (!isBettingPhase) {
+          return socket.emit('error', { message: 'Betting phase closed', type });
+        }
+
+        // Prevent duplicate bets for the same type in the same round
+        const existingBet = await Bet.findOne({
+          userId: currentUserId,
+          gameId: 'aviator',
+          roundId: state.roundId,
+          'metadata.type': type
+        });
+
+        if (existingBet) {
+          return socket.emit('error', { message: 'Bet already placed for this round', type });
         }
 
         // Check balance
         const balance = await walletService.getBalance(currentUserId);
         if (balance < betAmount) {
-          return socket.emit('error', { message: 'Insufficient balance' });
+          return socket.emit('error', { message: 'Insufficient balance', type });
         }
 
         // Deduct balance
@@ -193,7 +213,7 @@ function initializeAviatorSockets(io, gameEngine) {
 
       } catch (error) {
         console.error('Bet placement error:', error);
-        socket.emit('error', { message: error.message });
+        socket.emit('error', { message: error.message, type: data?.type || 'f' });
       }
     });
 
@@ -204,14 +224,14 @@ function initializeAviatorSockets(io, gameEngine) {
     socket.on('bet:cashout', async (data) => {
       try {
         const currentUserId = socket.userId || userId;
-        if (!currentUserId) {
-          return socket.emit('error', { message: 'Authentication required. Please login.' });
-        }
-
         const { endTarget, type = 'f' } = data;
 
+        if (!currentUserId) {
+          return socket.emit('error', { message: 'Authentication required. Please login.', type });
+        }
+
         if (!endTarget || endTarget < 1.01) {
-          return socket.emit('error', { message: 'Invalid cashout multiplier' });
+          return socket.emit('error', { message: 'Invalid cashout multiplier', type });
         }
 
         // Get current state (sanitized)
@@ -221,9 +241,10 @@ function initializeAviatorSockets(io, gameEngine) {
         let isValidCashout = false;
 
         if (state.status === 'FLYING') {
-          // In flying state, cashout is valid if claimed multiplier is reasonable
-          // We allow a small buffer (0.5x) for latency, but generally it should be close to server state
-          if (endTarget <= state.currentMultiplier + 0.5) {
+          // Relaxed Validation (Bug #4 Fix)
+          // We allow a larger buffer (1.0x) for latency or minor mismatches.
+          // Ideally, we should check timestamps, but increasing buffer helps significantly.
+          if (endTarget <= state.currentMultiplier + 1.0) {
             isValidCashout = true;
           }
         } else if (state.status === 'CRASHED') {
@@ -234,7 +255,7 @@ function initializeAviatorSockets(io, gameEngine) {
         }
 
         if (!isValidCashout) {
-          return socket.emit('error', { message: 'Cashout failed: Game ended or invalid multiplier' });
+          return socket.emit('error', { message: 'Cashout failed: Game ended or invalid multiplier', type });
         }
 
         // Find active bet for this user and round
@@ -256,7 +277,7 @@ function initializeAviatorSockets(io, gameEngine) {
         const bet = await Bet.findOne(query);
 
         if (!bet) {
-          return socket.emit('error', { message: 'No active bet found' });
+          return socket.emit('error', { message: 'No active bet found', type });
         }
 
         // If bet was marked as LOST, revert stats
@@ -328,7 +349,7 @@ function initializeAviatorSockets(io, gameEngine) {
 
       } catch (error) {
         console.error('Cashout error:', error);
-        socket.emit('error', { message: error.message });
+        socket.emit('error', { message: error.message, type: data?.type || 'f' });
       }
     });
 
@@ -378,6 +399,45 @@ function initializeAviatorSockets(io, gameEngine) {
     // Handle disconnection
     socket.on('disconnect', () => {
       console.log(`🎮 Aviator: Client disconnected - ${socket.id}`);
+    });
+
+    /**
+     * Chat Message
+     * Client → Server: sendMsg
+     */
+    socket.on('sendMsg', async (data) => {
+      try {
+        const { msgContent, msgType, userInfo: senderInfo } = data;
+
+        // Basic validation
+        if (!msgContent) return;
+
+        // Use the authenticated user ID if available, otherwise trust the client (less secure but compatible)
+        // Ideally we use socket.userId and database user info
+        const Chat = require('../../models/Chat.model');
+        const chatService = require('../../services/chat.service');
+
+        // Create message object
+        const chatData = {
+          userInfo: {
+            userId: socket.userId || senderInfo?.userId || 'anon',
+            userName: senderInfo?.userName || 'Guest',
+            avatar: senderInfo?.avatar || '',
+          },
+          msgContent,
+          msgType
+        };
+
+        // Save to DB
+        const savedChat = await chatService.saveMessage(chatData);
+
+        // Broadcast to all
+        // The client expects the same format as the DB document
+        aviatorNamespace.emit('msg:new', savedChat);
+
+      } catch (error) {
+        console.error('Chat error:', error);
+      }
     });
   });
 

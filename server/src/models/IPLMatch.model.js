@@ -61,3 +61,4 @@ iplMatchSchema.index({ status: 1, startTime: 1 });
 
 module.exports = mongoose.model('IPLMatch', iplMatchSchema);
 
+

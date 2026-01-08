@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     enum: ['USER', 'ADMIN'],
     default: 'USER',
   },
+  isBanned: {
+    type: Boolean,
+    default: false,
+  },
   balance: {
     type: Number,
     default: 0,
@@ -53,6 +57,14 @@ const userSchema = new mongoose.Schema({
     min: 0,
     max: 100,
   },
+  totalWagered: {
+    type: Number,
+    default: 0,
+  },
+  biggestWin: {
+    type: Number,
+    default: 0,
+  },
   avatar: {
     type: String,
     default: '',
@@ -74,4 +86,5 @@ userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
 module.exports = mongoose.model('User', userSchema);
+
 

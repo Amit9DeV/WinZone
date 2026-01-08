@@ -23,6 +23,7 @@ const walletRoutes = require('./routes/wallet.routes');
 const gameRoutes = require('./routes/game.routes');
 const adminRoutes = require('./routes/admin.routes');
 const aviatorRoutes = require('./routes/aviator.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 // Import game engines
 const gameRegistry = require('./games/index');
@@ -33,13 +34,14 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',')
-    : ['http://localhost:3000', 'http://localhost:3001'],
+  origin: true, // Allow ANY origin
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (avatars)
+app.use('/uploads', express.static('uploads'));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -59,11 +61,19 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api', userRoutes); // Alias for /api/my-info compatibility
 app.use('/api/wallet', walletRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/user', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/aviator', aviatorRoutes);
+app.use('/api', userRoutes); // Alias for /api/my-info compatibility - must be LAST
+// Chat Routes (Compatibility with Client)
+const chatRoutes = require('./routes/chat.routes');
+// The client calls /api/get-all-chat directly (no prefix like /api/chat)
+// So we mount it at /api/ directly or handle it inside the router
+// The client code says: `${config.api}/get-all-chat`. 
+// If config.api is http://localhost:5001/api, then it calls http://localhost:5001/api/get-all-chat
+app.use('/api', chatRoutes);
 
 // Initialize Socket.IO
 const io = initSocket(server);

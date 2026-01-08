@@ -20,6 +20,12 @@ const userStatsService = {
     user.totalWins += 1;
     user.totalLosses = user.totalBets - user.totalWins;
     user.winPercentage = (user.totalWins / user.totalBets) * 100;
+    user.totalWagered = (user.totalWagered || 0) + amount;
+
+    if (payout > (user.biggestWin || 0)) {
+      user.biggestWin = payout;
+    }
+
     await user.save();
 
     // Update game-specific stats
@@ -56,6 +62,7 @@ const userStatsService = {
     user.totalBets += 1;
     user.totalLosses += 1;
     user.winPercentage = (user.totalWins / user.totalBets) * 100;
+    user.totalWagered = (user.totalWagered || 0) + amount;
     await user.save();
 
     // Update game-specific stats
@@ -91,6 +98,7 @@ const userStatsService = {
     user.totalBets -= 1;
     user.totalLosses -= 1;
     // winPercentage will be recalculated in recordWin
+    user.totalWagered = (user.totalWagered || 0) - amount;
     await user.save();
 
     // Revert game-specific stats
@@ -121,6 +129,8 @@ const userStatsService = {
         totalLosses: user.totalLosses,
         winPercentage: user.winPercentage,
         balance: user.balance,
+        totalWagered: user.totalWagered,
+        biggestWin: user.biggestWin,
       },
       games: gameStats.reduce((acc, stat) => {
         acc[stat.gameId] = {
@@ -164,4 +174,5 @@ const userStatsService = {
 };
 
 module.exports = userStatsService;
+
 

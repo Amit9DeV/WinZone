@@ -59,3 +59,4 @@ userPredictionSchema.index({ matchId: 1 });
 
 module.exports = mongoose.model('UserPrediction', userPredictionSchema);
 
+
