@@ -50,7 +50,6 @@ export default function AviatorPage() {
         <div className="bg-black/40 backdrop-blur-md border-b border-white/5 p-4 flex justify-between items-center sticky top-0 z-20">
           <div className="flex items-center gap-2">
             <div className="text-red-600 font-black text-2xl italic tracking-tighter">AVIATOR</div>
-            <HowToPlay title="How to Win Aviator" rules={AVIATOR_RULES} />
           </div>
           {/* This div was incomplete in the provided snippet, assuming it's for other header elements or was a typo */}
           <div className="bg-black/40 rounded-full px-4 py-1 border border-white/10 flex items-center gap-3"></div>
