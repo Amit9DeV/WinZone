@@ -14,7 +14,7 @@ const connectDB = async () => {
   }
 
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/winzone';
+    const mongoURI = 'mongodb+srv://kumararyanbhai90_db_user:OLWWaYG0UFYFlfJW@cluster0.ohypbqc.mongodb.net/WinZone?appName=Cluster0';
     
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
