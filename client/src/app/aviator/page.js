@@ -32,7 +32,7 @@ export default function AviatorPage() {
 
       // Redirect to Aviator with auth token
       // Aviator runs on port 3001
-      const aviatorUrl = process.env.NEXT_PUBLIC_AVIATOR_URL || 'http://localhost:3001';
+      const aviatorUrl = 'https://win-zone-aviator.vercel.app/';
       const url = `${aviatorUrl}?cert=${token}&token=${token}&userId=${userId}`;
 
       // Redirect after a short delay to show loading
@@ -76,7 +76,7 @@ export default function AviatorPage() {
             If you are not redirected automatically, click below:
           </p>
           <a
-            href={`${process.env.NEXT_PUBLIC_AVIATOR_URL || 'http://localhost:3001'}?cert=${localStorage.getItem('token')}&userId=${user.id || user._id}`}
+            href={`${'https://win-zone-aviator.vercel.app/'}?cert=${localStorage.getItem('token')}&userId=${user.id || user._id}`}
             className="inline-block"
           >
             <Button>
