@@ -26,7 +26,7 @@ export default function TripleNumberPage() {
     const [hasBet, setHasBet] = useState(false); // Track single bet limit
 
     useEffect(() => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://192.168.16.101:50001'}/triple-number`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/triple-number`;
         const newSocket = io(url);
         setSocket(newSocket);
 
