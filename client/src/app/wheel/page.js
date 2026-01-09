@@ -31,7 +31,7 @@ export default function WheelPage() {
 
     // Initialize Socket
     useEffect(() => {
-        const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:50001';
+        const url = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com';
         const newSocket = io(`${url}/wheel`, {
             path: '/socket.io',
             transports: ['websocket'],
