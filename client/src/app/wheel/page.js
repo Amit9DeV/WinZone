@@ -31,7 +31,8 @@ export default function WheelPage() {
 
     // Initialize Socket
     useEffect(() => {
-        const newSocket = 'https://winzone-final.onrender.com/wheel', {
+        const url = 'https://winzone-final.onrender.com';
+        const newSocket = io(`${url}/wheel`, {
             path: '/socket.io',
             transports: ['websocket'],
             auth: { token: localStorage.getItem('token') }
