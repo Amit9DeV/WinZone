@@ -58,7 +58,7 @@ export default function PlinkoPage() {
     const currentMultipliers = getMultipliers(rows, risk);
 
     useEffect(() => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://192.168.16.101:50001'}/plinko`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/plinko`;
         const newSocket = io(url);
         setSocket(newSocket);
 
