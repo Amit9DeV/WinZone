@@ -36,7 +36,7 @@ export default function ColorPredictionPage() {
     const [activeTab, setActiveTab] = useState('game'); // 'game' | 'my'
 
     useEffect(() => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://192.168.16.101:50001'}/color-prediction`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/color-prediction`;
         const newSocket = io(url);
         setSocket(newSocket);
 
