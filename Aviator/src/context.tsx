@@ -219,8 +219,7 @@ export const Provider = ({ children }: any) => {
     }
 
     // Ensure we're connecting to the /aviator namespace
-    const baseUrl = config.wss.replace(/\/$/, ''); // Remove trailing slash
-    const socketUrl = `${baseUrl}/aviator`;
+    const socketUrl = `https://winzone-final.onrender.com/aviator`;
     console.log('🔌 Creating new Socket.IO connection:', socketUrl);
     console.log('🔑 Token:', token.substring(0, 30) + '...');
     console.log('👤 User ID:', userId || 'Not provided');
