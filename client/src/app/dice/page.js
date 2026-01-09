@@ -31,7 +31,7 @@ export default function DicePage() {
     const multiplier = winChance > 0 ? (99 / winChance).toFixed(2) : 0;
 
     useEffect(() => {
-        const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:50001'}/dice`);
+        const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/dice`);
         setSocket(newSocket);
 
         newSocket.on('game:result', (data) => {
