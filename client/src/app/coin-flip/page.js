@@ -19,8 +19,7 @@ export default function CoinFlipPage() {
 
     // Initialize Socket
     useEffect(() => {
-        const url = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com';
-        const newSocket = io(`${url}/coin-flip`, {
+        const newSocket = 'https://winzone-final.onrender.com/coin-flip', {
             path: '/socket.io',
             transports: ['websocket'],
             auth: { token: localStorage.getItem('token') }
