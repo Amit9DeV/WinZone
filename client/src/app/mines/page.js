@@ -33,7 +33,7 @@ export default function MinesPage() {
 
     useEffect(() => {
         // Use the same IP as api.js for mobile compatibility
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://192.168.16.101:50001'}/mines`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/mines`;
         console.log('Connecting to Mines Socket:', url);
         const newSocket = io(url);
         setSocket(newSocket);
