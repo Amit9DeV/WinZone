@@ -15,7 +15,7 @@ let io = null;
 const initSocket = (server) => {
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',')
-    : ['http://localhost:3000', 'http://localhost:3001', 'http://192.168.16.101:3000'];
+    : ['https://win-zone-fun.vercel.app/', 'https://win-zone-aviator.vercel.app/', 'http://192.168.16.101:3000'];
 
   io = new Server(server, {
     cors: {
