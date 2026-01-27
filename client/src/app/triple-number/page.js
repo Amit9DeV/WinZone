@@ -26,7 +26,8 @@ export default function TripleNumberPage() {
     const [hasBet, setHasBet] = useState(false); // Track single bet limit
 
     useEffect(() => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/triple-number`;
+        const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const url = `${SOCKET_URL}/triple-number`;
         const newSocket = io(url);
         setSocket(newSocket);
 
@@ -88,20 +89,20 @@ export default function TripleNumberPage() {
             <div className="min-h-screen bg-gray-900 pb-20 p-4">
 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-6 mb-6 shadow-2xl relative overflow-hidden">
-                    <div className="relative z-10 flex justify-between items-center">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-3xl font-black text-white italic tracking-tighter">TRIPLE NUMBER</h1>
+                <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6 shadow-2xl relative overflow-hidden">
+                    <div className="relative z-10 flex justify-between items-start md:items-center gap-3">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h1 className="text-xl md:text-3xl font-black text-white italic tracking-tighter">TRIPLE NUMBER</h1>
                                 <HowToPlay title="Triple Number Rules" rules={TRIPLE_RULES} />
                             </div>
-                            <p className="text-blue-200 text-sm">Pick 1, 2, or 3. Win 2.8x!</p>
+                            <p className="text-blue-200 text-xs md:text-sm mt-1">Pick 1, 2, or 3. Win 2.8x!</p>
                         </div>
-                        <div className="text-right">
-                            <div className={`text-4xl font-mono font-bold ${timer < 5 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                        <div className="text-right flex-shrink-0">
+                            <div className={`text-2xl md:text-4xl font-mono font-bold ${timer < 5 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
                                 {timer}s
                             </div>
-                            <div className="text-xs text-blue-300 uppercase font-bold tracking-widest">{gameState}</div>
+                            <div className="text-[10px] md:text-xs text-blue-300 uppercase font-bold tracking-widest">{gameState}</div>
                         </div>
                     </div>
                 </div>
@@ -114,26 +115,26 @@ export default function TripleNumberPage() {
                         {lastResult && (
                             <motion.div
                                 initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1.5, rotate: 0 }}
+                                animate={{ scale: 1, rotate: 0 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
                             >
-                                <div className="bg-yellow-400 w-48 h-48 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(250,204,21,0.6)] border-4 border-white">
-                                    <span className="text-9xl font-black text-black">{lastResult}</span>
+                                <div className="bg-yellow-400 w-32 h-32 md:w-48 md:h-48 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(250,204,21,0.6)] border-2 md:border-4 border-white">
+                                    <span className="text-6xl md:text-9xl font-black text-black">{lastResult}</span>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
                     {/* Betting Buttons */}
-                    <div className="grid grid-cols-3 gap-4 mb-8">
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
                         {[1, 2, 3].map(num => (
                             <button
                                 key={num}
                                 onClick={() => handleBet(num)}
                                 disabled={gameState !== 'BETTING' || hasBet}
                                 className={`
-                                    aspect-square rounded-2xl flex items-center justify-center text-6xl font-black shadow-lg transition-all
+                                    aspect-square rounded-xl md:rounded-2xl flex items-center justify-center text-4xl md:text-6xl font-black shadow-lg transition-all
                                     hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed
                                     ${num === 1 ? 'bg-cyan-500 shadow-cyan-500/30' : ''}
                                     ${num === 2 ? 'bg-pink-500 shadow-pink-500/30' : ''}
@@ -146,7 +147,7 @@ export default function TripleNumberPage() {
                     </div>
 
                     {/* Bet Amount */}
-                    <div className="bg-gray-800 p-4 rounded-xl mb-6">
+                    <div className="bg-gray-800 p-3 md:p-4 rounded-lg md:rounded-xl mb-4 md:mb-6">
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-gray-400 text-sm font-bold">Wager Amount</span>
                             <span className="text-white font-mono">₹{betAmount}</span>
@@ -160,12 +161,12 @@ export default function TripleNumberPage() {
                             onChange={(e) => setBetAmount(Number(e.target.value))}
                             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                         />
-                        <div className="flex justify-between mt-2 gap-2">
+                        <div className="flex justify-between mt-2 gap-1.5 md:gap-2">
                             {[10, 50, 100, 500].map(amt => (
                                 <button
                                     key={amt}
                                     onClick={() => setBetAmount(amt)}
-                                    className="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded"
+                                    className="bg-gray-700 hover:bg-gray-600 text-white text-[10px] md:text-xs font-bold py-1 px-2 md:px-3 rounded"
                                 >
                                     ₹{amt}
                                 </button>

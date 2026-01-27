@@ -2,8 +2,8 @@
     "development": true,
     "debug": true,
     "appKey": "crash-0.1.0",
-    "production_api": "https://domain.crash.games/api",
-    "production_wss": "https://domain.crash.games",
-    "development_api": "http://localhost:50001/api",
-    "development_wss": "http://localhost:50001"
+    "production_api": "https://winzone-final.onrender.com/api",
+    "production_wss": "https://winzone-final.onrender.com",
+    "development_api": "https://winzone-final.onrender.com/api",
+    "development_wss": "https://winzone-final.onrender.com"
 }

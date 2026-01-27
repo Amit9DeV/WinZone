@@ -29,19 +29,28 @@ async function handleSocketConnection(socket, io) {
     socket.on('bet:place', async (data) => {
         try {
             // Auth Logic
-            let user = socket.request.user;
-            if (!user) {
+            let userId = socket.request.user ? socket.request.user._id : null;
+
+            // If checking from token or other source
+            if (!userId) {
                 const token = socket.handshake.auth.token;
                 if (token) {
                     const jwt = require('jsonwebtoken');
                     const User = require('../../models/User.model');
                     try {
                         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
-                        user = await User.findById(decoded.userId);
+                        userId = decoded.userId;
                     } catch (e) { }
                 }
             }
+            if (!userId && data.userId) userId = data.userId;
 
+            // Sanitize userId
+            if (userId === 'undefined' || userId === 'null') userId = null;
+
+            if (!userId) return socket.emit('error', 'Unauthorized');
+            const User = require('../../models/User.model');
+            let user = await User.findById(userId);
             if (!user) return socket.emit('error', 'Unauthorized');
 
             const amount = parseFloat(data.amount);

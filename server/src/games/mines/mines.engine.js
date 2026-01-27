@@ -17,7 +17,12 @@ function initialize(io, config) {
         // Start Game (Bet)
         socket.on('game:start', async (data) => {
             try {
-                const { userId, betAmount, mineCount } = data;
+                let { userId, betAmount, mineCount } = data;
+
+                // Sanitize userId
+                if (userId === 'undefined' || userId === 'null') userId = null;
+
+                if (!userId) throw new Error('Unauthorized');
 
                 // 1. Validation
                 if (activeGames.has(socket.id)) {
@@ -25,7 +30,16 @@ function initialize(io, config) {
                     activeGames.delete(socket.id);
                 }
 
-                if (betAmount < 10) throw new Error('Min bet is 10');
+                // Fetch Dynamic Config
+                const Game = require('../../models/Game.model');
+                const gameConfigDoc = await Game.findOne({ gameId: 'mines' });
+                const minBet = gameConfigDoc?.minBet || 10;
+                const maxBet = gameConfigDoc?.maxBet || 10000;
+                const isEnabled = gameConfigDoc?.enabled ?? true;
+
+                if (!isEnabled) throw new Error('Game is currently disabled');
+                if (betAmount < minBet) throw new Error(`Min bet is ${minBet}`);
+                if (betAmount > maxBet) throw new Error(`Max bet is ${maxBet}`);
                 if (mineCount < 1 || mineCount > 24) throw new Error('Invalid mines');
 
                 // 2. Transact User

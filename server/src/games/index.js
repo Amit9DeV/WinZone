@@ -120,6 +120,30 @@ const gameRegistry = {
         minBet: 10,
         maxBet: 10000,
       },
+      {
+        gameId: 'slots',
+        name: 'Classic Slots',
+        enabled: true,
+        description: 'Spin and Win! 777 Jackpot!',
+        minBet: 10,
+        maxBet: 5000,
+      },
+      {
+        gameId: 'limbo',
+        name: 'Limbo',
+        enabled: true,
+        description: 'Predict the multiplier! Win Big!',
+        minBet: 1,
+        maxBet: 10000,
+      },
+      {
+        gameId: 'keno',
+        name: 'Keno',
+        enabled: true,
+        description: 'Pick your lucky numbers! Up to 1000x!',
+        minBet: 1,
+        maxBet: 5000,
+      },
     ];
 
     for (const gameData of defaultGames) {
@@ -179,6 +203,15 @@ const gameRegistry = {
           break;
         case 'wheel':
           gameEngine = require('./wheel/wheel.engine');
+          break;
+        case 'slots':
+          gameEngine = require('./slots/slots.engine');
+          break;
+        case 'limbo':
+          gameEngine = require('./limbo/limbo.engine');
+          break;
+        case 'keno':
+          gameEngine = require('./keno/keno.engine');
           break;
         default:
           console.log(`⚠️  No engine found for game: ${gameId}`);

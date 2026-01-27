@@ -72,7 +72,10 @@ export const userAPI = {
 export const walletAPI = {
   getBalance: () => api.get('/wallet/balance'),
   requestBalance: (amount) => api.post('/wallet/request', { amount }),
+  getBalance: () => api.get('/wallet/balance'),
+  requestBalance: (amount) => api.post('/wallet/request', { amount }),
   getRequests: () => api.get('/wallet/requests'),
+  redeemPromo: (code) => api.post('/promo/redeem', { code }),
 };
 
 // Game APIs
@@ -95,6 +98,12 @@ export const adminAPI = {
   getSchedules: (params) => api.get('/admin/aviator/schedules', { params }),
   deleteSchedule: (scheduleId) => api.delete(`/admin/aviator/schedules/${scheduleId}`),
   getRounds: (params) => api.get('/admin/aviator/rounds', { params }),
+};
+
+// Content APIs
+export const contentAPI = {
+  getBanners: () => api.get('/content/banners'),
+  getAnnouncement: () => api.get('/content/announcement'),
 };
 
 export default api;

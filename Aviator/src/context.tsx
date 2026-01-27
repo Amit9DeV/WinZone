@@ -219,7 +219,7 @@ export const Provider = ({ children }: any) => {
     }
 
     // Ensure we're connecting to the /aviator namespace
-    const socketUrl = `https://winzone-final.onrender.com/aviator`;
+    const socketUrl = `${config.wss}/aviator`;
     console.log('🔌 Creating new Socket.IO connection:', socketUrl);
     console.log('🔑 Token:', token.substring(0, 30) + '...');
     console.log('👤 User ID:', userId || 'Not provided');

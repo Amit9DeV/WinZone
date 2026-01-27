@@ -32,9 +32,23 @@ function initialize(io, config) {
 
         socket.on('bet:place', async (data) => {
             try {
-                const { userId, betAmount, rows, risk } = data; // rows 8-16
+                let { userId, betAmount, rows, risk } = data; // rows 8-16
 
-                if (betAmount < 10) throw new Error('Min bet is 10');
+                // Sanitize userId
+                if (userId === 'undefined' || userId === 'null') userId = null;
+
+                if (!userId) throw new Error('Unauthorized');
+
+                // Fetch Dynamic Config
+                const Game = require('../../models/Game.model');
+                const gameConfigDoc = await Game.findOne({ gameId: 'plinko' });
+                const minBet = gameConfigDoc?.minBet || 10;
+                const maxBet = gameConfigDoc?.maxBet || 1000;
+                const isEnabled = gameConfigDoc?.enabled ?? true;
+
+                if (!isEnabled) throw new Error('Game is currently disabled');
+                if (betAmount < minBet) throw new Error(`Min bet is ${minBet}`);
+                if (betAmount > maxBet) throw new Error(`Max bet is ${maxBet}`);
 
                 // 1. Transaction
                 const user = await User.findById(userId);

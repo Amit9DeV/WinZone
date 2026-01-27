@@ -48,11 +48,23 @@ const Bet = require('../../models/Bet.model');
  */
 async function handleBet(socket, data) {
     try {
-        const { amount, target, condition, userId } = data; // userId needed from client
+        let { amount, target, condition, userId } = data; // userId needed from client
+
+        // Sanitize userId
+        if (userId === 'undefined' || userId === 'null') userId = null;
+
         console.log(`🎲 Dice Bet: Amount=${amount}, Target=${target}, Condition=${condition}, UserId=${userId}`);
 
         // 1. Validation
-        if (amount < 1) throw new Error('Invalid bet amount');
+        const Game = require('../../models/Game.model');
+        const gameConfigDoc = await Game.findOne({ gameId: 'dice' });
+        const minBet = gameConfigDoc?.minBet || 1;
+        const maxBet = gameConfigDoc?.maxBet || 10000;
+        const isEnabled = gameConfigDoc?.enabled ?? true;
+
+        if (!isEnabled) throw new Error('Game is currently disabled');
+        if (amount < minBet) throw new Error(`Min bet is ${minBet}`);
+        if (amount > maxBet) throw new Error(`Max bet is ${maxBet}`);
         if (target < 2 || target > 98) throw new Error('Target out of range');
 
         // 2. Fetch User & Check Balance
@@ -117,14 +129,29 @@ async function handleBet(socket, data) {
 
         // 7. Emit Result
         setTimeout(() => {
-            socket.emit('game:result', {
+            const resultData = {
                 betId: uuidv4(),
                 result: result,
                 won: won,
                 payout: won ? amount * multiplier : 0,
                 multiplier: multiplier,
                 newBalance: user.balance
-            });
+            };
+            socket.emit('game:result', resultData);
+
+            // Broadcast to Live Feed
+            const liveBetData = {
+                id: resultData.betId,
+                username: user.name || 'Hidden User',
+                game: 'Dice',
+                amount: amount,
+                won: won,
+                payout: resultData.payout,
+                multiplier: multiplier
+            };
+            // Use global io to broadcast to all clients
+            io.emit('bet:live', liveBetData);
+
         }, 500);
 
     } catch (e) {

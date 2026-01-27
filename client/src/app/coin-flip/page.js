@@ -19,7 +19,7 @@ export default function CoinFlipPage() {
 
     // Initialize Socket
     useEffect(() => {
-      const url = 'https://winzone-final.onrender.com';
+        const url = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
         const newSocket = io(`${url}/coin-flip`, {
             path: '/socket.io',
             transports: ['websocket'],
@@ -84,7 +84,8 @@ export default function CoinFlipPage() {
 
         socket.emit('bet:place', {
             amount: betAmount,
-            choice: selectedChoice
+            choice: selectedChoice,
+            userId: user._id || user.id
         });
 
         // Timeout Safety (Server not responding)

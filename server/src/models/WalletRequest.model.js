@@ -26,8 +26,7 @@ const walletRequestSchema = new mongoose.Schema({
     default: '',
   },
   processedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String, // Changed from ObjectId to String to support 'admin' ID
     default: null,
   },
   processedAt: {

@@ -5,6 +5,7 @@
 
 import axios from 'axios';
 
+// const API_BASE_URL = 'http://localhost:5001/api';
 const API_BASE_URL = 'https://winzone-final.onrender.com/api';
 
 // Create axios instance
@@ -91,6 +92,28 @@ export const adminAPI = {
     getSchedules: (params) => api.get('/admin/aviator/schedules', { params }),
     deleteSchedule: (scheduleId) => api.delete(`/admin/aviator/schedules/${scheduleId}`),
     getRounds: (params) => api.get('/admin/aviator/rounds', { params }),
+
+    // Analytics
+    getAnalyticsDashboard: () => api.get('/admin/analytics/dashboard'),
+    getGamePerformance: () => api.get('/admin/analytics/games'),
+    getPnlChart: () => api.get('/admin/analytics/charts'),
+
+    // Risk
+    getRiskDashboard: () => api.get('/admin/risk/dashboard'),
+
+    // Content (CMS)
+    getBanners: () => api.get('/content/banners'),
+    uploadBanner: (formData) => api.post('/content/banners/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    deleteBanner: (id) => api.delete(`/content/banners/${id}`),
+    getAnnouncement: () => api.get('/content/announcement'),
+    updateAnnouncement: (text, active) => api.post('/content/announcement', { text, active }),
+
+    // Promos
+    createPromo: (data) => api.post('/promo/create', data),
+    getPromos: () => api.get('/promo/list'),
+    deletePromo: (id) => api.delete(`/promo/${id}`),
 };
 
 export default api;

@@ -22,16 +22,17 @@ const SEGMENTS = [
 const DEG_PER_SEGMENT = 360 / 6;
 
 export default function WheelPage() {
-    const { user, updateBalance } = useAuth();
+    const { user, balance, updateBalance } = useAuth();
     const [socket, setSocket] = useState(null);
     const [spinning, setSpinning] = useState(false);
     const [rotation, setRotation] = useState(0);
     const [betAmount, setBetAmount] = useState(10);
     const [lastWin, setLastWin] = useState(null);
+    const [bets, setBets] = useState({}); // Added for totalBet calculation
 
     // Initialize Socket
     useEffect(() => {
-        const url = 'https://winzone-final.onrender.com';
+        const url = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
         const newSocket = io(`${url}/wheel`, {
             path: '/socket.io',
             transports: ['websocket'],
@@ -102,14 +103,17 @@ export default function WheelPage() {
     const placeBet = (color) => {
         if (!user) return toast.error('Please login to play');
         if (spinning) return;
-        if (user.balance < betAmount) return toast.error('Insufficient balance');
+        let totalBet = Object.values(bets).reduce((a, b) => a + b, 0);
+        if (totalBet === 0) return toast.error('Place a bet first');
+        if (totalBet > balance) return toast.error('Insufficient balance');
 
         setSpinning(true);
         setLastWin(null);
 
         socket.emit('bet:place', {
             amount: betAmount,
-            color: color
+            color: color,
+            userId: user._id || user.id
         });
 
         // Timeout Safety

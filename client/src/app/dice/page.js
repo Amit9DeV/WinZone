@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { Button } from '@/components/ui';
-import { Dices, Trophy, RefreshCcw } from 'lucide-react';
+import { Dices } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
@@ -18,20 +18,20 @@ const DICE_RULES = [
 ];
 
 export default function DicePage() {
-    const { user, updateBalance } = useAuth();
+    const { user, balance, updateBalance } = useAuth();
     const [socket, setSocket] = useState(null);
     const [betAmount, setBetAmount] = useState(10);
-    const [target, setTarget] = useState(50); // Slider value 2-98
-    const [condition, setCondition] = useState('over'); // 'over' | 'under'
+    const [target, setTarget] = useState(50);
+    const [condition, setCondition] = useState('over');
     const [rolling, setRolling] = useState(false);
     const [lastResult, setLastResult] = useState(null);
 
-    // Calculate Multiplier & Chance dynamically
     const winChance = condition === 'under' ? target : (100 - target);
     const multiplier = winChance > 0 ? (99 / winChance).toFixed(2) : 0;
 
     useEffect(() => {
-        const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/dice`);
+        const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const newSocket = io(`${SOCKET_URL}/dice`);
         setSocket(newSocket);
 
         newSocket.on('game:result', (data) => {
@@ -61,45 +61,45 @@ export default function DicePage() {
 
         setRolling(true);
         setLastResult(null);
-        socket.emit('bet:place', { amount: betAmount, target, condition, userId: user._id || user.id });
+        socket.emit('bet:place', {
+            amount: betAmount,
+            target,
+            condition,
+            userId: user._id || user.id
+        });
     };
 
     return (
         <MainLayout>
             <div className="min-h-[calc(100vh-100px)] flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-lg bg-surface-1 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
-                    {/* Background decoration */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[100px] pointer-events-none"></div>
-
+                <div className="w-full max-w-lg bg-surface-1 border border-white/10 rounded-2xl p-5 md:p-7 shadow-xl relative">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                                 <Dices className="text-white" size={20} />
                             </div>
-                            <h1 className="text-2xl font-bold text-white">Dice</h1>
+                            <h1 className="text-xl md:text-2xl font-bold text-white">Dice</h1>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-gray-400 text-sm font-mono hidden md:block">Provably Fair</div>
+                        <div className="flex items-center gap-3">
+                            <div className="text-gray-400 text-xs font-mono hidden md:block">Provably Fair</div>
                             <HowToPlay title="Dice Game Rules" rules={DICE_RULES} />
                         </div>
                     </div>
 
                     {/* Result Display */}
-                    <div className="mb-8 relative h-32 bg-black/40 rounded-2xl flex items-center justify-center border border-white/5 overflow-hidden">
-                        <div className={`text-6xl font-black tabular-nums transition-all duration-300 ${rolling ? 'animate-bounce opacity-50' : ''} ${lastResult?.won ? 'text-green-400' : lastResult?.won === false ? 'text-red-400' : 'text-white'}`}>
+                    <div className="mb-6 relative h-28 md:h-32 bg-black/40 rounded-xl flex items-center justify-center border border-white/5">
+                        <div className={`text-5xl md:text-6xl font-black tabular-nums transition-all duration-200 ${rolling ? 'opacity-50' : ''} ${lastResult?.won ? 'text-green-400' : lastResult?.won === false ? 'text-red-400' : 'text-white'}`}>
                             {rolling ? '...' : (lastResult ? lastResult.result.toFixed(2) : '0.00')}
                         </div>
-                        {/* Slider Track Visual Match */}
                         <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-red-500 to-green-500 w-full opacity-20"></div>
                     </div>
 
                     {/* Controls */}
-                    <div className="space-y-6">
-
+                    <div className="space-y-5">
                         {/* Target Slider */}
                         <div>
-                            <div className="flex justify-between mb-2 text-sm font-medium">
+                            <div className="flex justify-between mb-2 text-xs md:text-sm font-medium">
                                 <span className="text-gray-400">Target: <span className="text-white">{target}</span></span>
                                 <span className="text-gray-400">Multiplier: <span className="text-green-400">x{multiplier}</span></span>
                                 <span className="text-gray-400">Win Chance: <span className="text-blue-400">{winChance}%</span></span>
@@ -113,9 +113,9 @@ export default function DicePage() {
                                 onChange={(e) => setTarget(parseInt(e.target.value))}
                                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                             />
-                            <div className="flex justify-between mt-2">
-                                <button onClick={() => setCondition('under')} className={`text-xs px-3 py-1 rounded-full border ${condition === 'under' ? 'bg-purple-500 text-white border-purple-500' : 'border-gray-600 text-gray-400'}`}>Under {target}</button>
-                                <button onClick={() => setCondition('over')} className={`text-xs px-3 py-1 rounded-full border ${condition === 'over' ? 'bg-purple-500 text-white border-purple-500' : 'border-gray-600 text-gray-400'}`}>Over {target}</button>
+                            <div className="flex justify-between mt-2 gap-2">
+                                <button onClick={() => setCondition('under')} className={`text-xs md:text-sm px-4 py-2 rounded-lg border transition-colors ${condition === 'under' ? 'bg-purple-500 text-white border-purple-500' : 'border-gray-600 text-gray-400 hover:border-purple-500'}`}>Under {target}</button>
+                                <button onClick={() => setCondition('over')} className={`text-xs md:text-sm px-4 py-2 rounded-lg border transition-colors ${condition === 'over' ? 'bg-purple-500 text-white border-purple-500' : 'border-gray-600 text-gray-400 hover:border-purple-500'}`}>Over {target}</button>
                             </div>
                         </div>
 
@@ -127,10 +127,10 @@ export default function DicePage() {
                                     type="number"
                                     value={betAmount}
                                     onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                                    className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-purple-500"
+                                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-purple-500"
                                 />
-                                <button onClick={() => setBetAmount(prev => prev * 2)} className="px-4 bg-surface-2 rounded-xl text-gray-400 hover:text-white font-medium">2x</button>
-                                <button onClick={() => setBetAmount(prev => Math.floor(prev / 2))} className="px-4 bg-surface-2 rounded-xl text-gray-400 hover:text-white font-medium">½</button>
+                                <button onClick={() => setBetAmount(prev => prev * 2)} className="px-4 bg-surface-2 rounded-lg text-gray-400 hover:text-white font-medium transition-colors">2x</button>
+                                <button onClick={() => setBetAmount(prev => Math.floor(prev / 2))} className="px-4 bg-surface-2 rounded-lg text-gray-400 hover:text-white font-medium transition-colors">½</button>
                             </div>
                         </div>
 
@@ -138,11 +138,10 @@ export default function DicePage() {
                         <Button
                             onClick={handleRoll}
                             disabled={rolling}
-                            className={`w-full py-6 text-xl font-bold shadow-lg transition-all ${rolling ? 'bg-gray-600' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-purple-500/30'}`}
+                            className={`w-full py-5 md:py-6 text-lg md:text-xl font-bold transition-all ${rolling ? 'bg-gray-600' : 'bg-gradient-to-r from-purple-600 to-pink-600'}`}
                         >
                             {rolling ? 'Rolling...' : `Roll Dice (Win ₹${(betAmount * multiplier).toFixed(2)})`}
                         </Button>
-
                     </div>
                 </div>
             </div>

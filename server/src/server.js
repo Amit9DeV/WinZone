@@ -1,13 +1,16 @@
 /**
  * Main Server Entry Point
  * Gaming Platform Backend - WinZO/Probo/Cricbuzz Style
- * 
- * Architecture:
- * - Express.js for REST APIs
- * - Socket.IO for real-time game updates
- * - MongoDB for data persistence
- * - Modular game system (plug-and-play games)
  */
+
+// FORCE DNS TO GOOGLE (Fixes local resolution issues)
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+  console.log('✅ DNS forcefully set to Google DNS (8.8.8.8)');
+} catch (error) {
+  console.log('⚠️ Failed to set custom DNS:', error.message);
+}
 
 require('dotenv').config();
 const express = require('express');
@@ -21,9 +24,11 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const walletRoutes = require('./routes/wallet.routes');
 const gameRoutes = require('./routes/game.routes');
+const rewardRoutes = require('./routes/reward.routes');
 const adminRoutes = require('./routes/admin.routes');
 const aviatorRoutes = require('./routes/aviator.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const leaderboardRoutes = require('./routes/leaderboard');
 
 // Import game engines
 const gameRegistry = require('./games/index');
@@ -58,14 +63,36 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Health Check Endpoint (for cold start detection)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: Date.now(),
+    uptime: process.uptime()
+  });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/wallet', walletRoutes);
 app.use('/api/games', gameRoutes);
-app.use('/api/user', uploadRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/reward', rewardRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+const statsRoutes = require('./routes/stats');
+app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/aviator', aviatorRoutes);
+const analyticsRoutes = require('./routes/analytics.routes');
+app.use('/api/admin/analytics', analyticsRoutes);
+
+const contentRoutes = require('./routes/content.routes');
+app.use('/api/content', contentRoutes);
+
+const promoRoutes = require('./routes/promo.routes');
+app.use('/api/promo', promoRoutes);
+
+app.use('/api/user', uploadRoutes);
 app.use('/api', userRoutes); // Alias for /api/my-info compatibility - must be LAST
 // Chat Routes (Compatibility with Client)
 const chatRoutes = require('./routes/chat.routes');
@@ -81,8 +108,51 @@ const io = initSocket(server);
 // Make io available globally for game engines
 global.io = io;
 
-// Initialize game registry and start game engines
-gameRegistry.initialize(io);
+// Initialize Chat Handler
+const chatHandler = require('./socket/chat.handler');
+chatHandler.initialize(io);
+
+const leaderboardService = require('./services/leaderboard.service');
+
+// Start server
+const PORT = process.env.PORT || 5001;
+
+server.listen(PORT, async () => {
+  console.log('========================================');
+  console.log('🚀 Gaming Platform Backend Started');
+  console.log('========================================');
+  console.log(`📡 Server running on port ${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    console.log('✅ MongoDB Connected');
+
+    // Initialize Game Registry
+    await gameRegistry.initialize(io);
+    console.log(`🎮 Game Registry: ${Object.keys(gameRegistry.getGames()).length} games initialized`);
+
+    // Initialize Bot Service
+    const botService = require('./services/bot.service');
+    botService.initialize(io);
+    console.log('🤖 Bot Service Initialized');
+
+    // Leaderboard Updater (Every 1 minute)
+    setInterval(() => {
+      leaderboardService.updateLeaderboard('daily');
+      leaderboardService.updateLeaderboard('weekly');
+      leaderboardService.updateLeaderboard('monthly');
+      // console.log('Leaderboards updated.'); // Optional: log when leaderboards are updated
+    }, 60 * 1000);
+    console.log('📊 Leaderboard updater started (every 1 minute)');
+
+    console.log('========================================');
+  } catch (error) {
+    console.error('❌ Failed to start server components:', error);
+    process.exit(1);
+  }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -102,30 +172,6 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5001;
-
-const startServer = async () => {
-  try {
-    // Connect to MongoDB
-    await connectDB();
-
-    // Start HTTP server
-    server.listen(PORT, () => {
-      console.log('========================================');
-      console.log('🚀 Gaming Platform Backend Started');
-      console.log('========================================');
-      console.log(`📡 Server running on port ${PORT}`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🎮 Game Registry: ${Object.keys(gameRegistry.getGames()).length} games`);
-      console.log('========================================');
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully...');
@@ -142,9 +188,6 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
-
-// Start the server
-startServer();
 
 module.exports = { app, server };
 

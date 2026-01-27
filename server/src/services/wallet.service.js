@@ -6,6 +6,7 @@
 const User = require('../models/User.model');
 const WalletRequest = require('../models/WalletRequest.model');
 const UserActivity = require('../models/UserActivity.model');
+const { getIO } = require('../config/socket');
 
 const walletService = {
   /**
@@ -40,6 +41,11 @@ const walletService = {
     user.balance = newBalance;
     await user.save();
 
+
+
+    // Emit real-time update
+    this.emitBalanceUpdate(userId, newBalance);
+
     // Log activity
     await UserActivity.create({
       userId,
@@ -54,6 +60,21 @@ const walletService = {
 
     return user;
   },
+
+  /**
+   * Helper to emit balance update
+   */
+  emitBalanceUpdate(userId, balance) {
+    try {
+      const io = getIO();
+      io.to(`user:${userId}`).emit('user:balance', balance);
+      console.log(`📡 Emitted balance update for ${userId}: ${balance}`);
+    } catch (error) {
+      console.error('Socket emit error:', error.message);
+    }
+  },
+
+  /**
 
   /**
    * Request balance (user creates request, admin approves)

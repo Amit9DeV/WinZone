@@ -4,6 +4,7 @@
  */
 
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 let isConnected = false;
 
@@ -14,11 +15,14 @@ const connectDB = async () => {
   }
 
   try {
-    const mongoURI = 'mongodb+srv://kumararyanbhai90_db_user:OLWWaYG0UFYFlfJW@cluster0.ohypbqc.mongodb.net/WinZone?appName=Cluster0';
-    
+    const mongoURI = process.env.MONGO_URI;
+
+    if (!mongoURI) {
+      throw new Error('MONGO_URI is not defined in environment variables');
+    }
+
     await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      family: 4,
     });
 
     isConnected = true;
@@ -42,6 +46,7 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
+    console.error('Make sure your IP is whitelisted in MongoDB Atlas or try using a different network/DNS.');
     isConnected = false;
     // Retry connection after 5 seconds
     setTimeout(connectDB, 5000);
@@ -49,5 +54,3 @@ const connectDB = async () => {
 };
 
 module.exports = { connectDB, mongoose };
-
-

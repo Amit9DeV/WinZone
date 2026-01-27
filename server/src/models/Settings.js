@@ -28,6 +28,57 @@ const settingsSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    // Bot Configuration
+    botConfig: {
+        enabled: { type: Boolean, default: false },
+        games: {
+            aviator: {
+                enabled: { type: Boolean, default: true },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 1000 }
+            },
+            mines: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 500 }
+            },
+            dice: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 1 },
+                maxBet: { type: Number, default: 500 }
+            },
+            plinko: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 500 }
+            },
+            limbo: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 1 },
+                maxBet: { type: Number, default: 500 }
+            },
+            coinflip: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 500 }
+            },
+            wheel: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 500 }
+            },
+            keno: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 500 }
+            },
+            slots: {
+                enabled: { type: Boolean, default: false },
+                minBet: { type: Number, default: 10 },
+                maxBet: { type: Number, default: 1000 }
+            }
+        }
     }
 });
 

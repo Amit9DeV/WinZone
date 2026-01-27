@@ -77,9 +77,38 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  // Referral System
+  referralCode: {
+    type: String,
+    unique: true,
+    sparse: true // Allow null/unique
+  },
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  referralEarnings: {
+    type: Number,
+    default: 0
+  },
+  referralCount: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true,
 });
+
+// Index for referral lookups
+userSchema.index({ referralCode: 1 });
+
+// Helper to generate referral code
+userSchema.methods.generateReferralCode = function () {
+  // Basic Ref Code: First 4 chars of name (or random) + random number
+  const base = this.name ? this.name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, 'USER') : 'USER';
+  const random = Math.floor(1000 + Math.random() * 9000);
+  this.referralCode = `${base}${random}`;
+};
 
 // Index for faster queries
 userSchema.index({ email: 1 });

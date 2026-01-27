@@ -23,18 +23,21 @@ async function handleSocketConnection(socket, io) {
         // data: { amount: number, choice: 'HEADS' | 'TAILS' }
         try {
             // Auth Logic
-            let user = socket.request.user;
-            if (!user) {
-                const token = socket.handshake.auth.token;
-                if (token) {
-                    const jwt = require('jsonwebtoken');
-                    const User = require('../../models/User.model');
-                    try {
-                        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
-                        user = await User.findById(decoded.userId);
-                    } catch (e) { }
-                }
+            // Auth Logic
+            let userId = data.userId || socket.userId;
+
+            if (!userId) {
+                // Fallback: try handshake query if not set on socket object yet
+                userId = socket.handshake.query.userId;
             }
+
+            // Sanitize
+            if (userId === 'undefined' || userId === 'null') userId = null;
+
+            if (!userId) return socket.emit('error', 'Unauthorized');
+
+            const User = require('../../models/User.model');
+            const user = await User.findById(userId);
 
             if (!user) return socket.emit('error', 'Unauthorized');
 

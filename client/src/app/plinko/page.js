@@ -27,12 +27,13 @@ const RISK_COLORS = {
 };
 
 export default function PlinkoPage() {
-    const { user, updateBalance } = useAuth();
-    const [socket, setSocket] = useState(null);
+    const { user, balance, updateBalance } = useAuth();
+    const [difficulty, setDifficulty] = useState('medium');
     const [betAmount, setBetAmount] = useState(100);
     const [risk, setRisk] = useState('Medium');
     const [rows, setRows] = useState(16);
     const [muted, setMuted] = useState(false);
+    const [socket, setSocket] = useState(null);
 
     // Game State
     const [dropping, setDropping] = useState(false);
@@ -58,7 +59,8 @@ export default function PlinkoPage() {
     const currentMultipliers = getMultipliers(rows, risk);
 
     useEffect(() => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/plinko`;
+        const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const url = `${SOCKET_URL}/plinko`;
         const newSocket = io(url);
         setSocket(newSocket);
 
@@ -81,12 +83,17 @@ export default function PlinkoPage() {
 
     const handleBet = () => {
         if (!user) return toast.error('Login to play');
-        if (betAmount > user.balance) return toast.error('Insufficient funds');
-        // Allow multiple balls? Yes, typical Plinko allows spamming
+        if (betAmount > balance) return toast.error('Insufficient funds');
+        if (activeBalls.length >= 10) return toast.error('Wait for balls to finish'); // Using activeBalls.length for inGameBalls
         // But for safety, maybe throttle slightly
         // setDropping(true); // Don't block UI, allow multiple drops
 
-        socket.emit('bet:place', { userId: user._id || user.id, betAmount, rows, risk });
+        socket.emit('bet:place', {
+            userId: user._id || user.id,
+            betAmount,
+            rows,
+            risk
+        });
     };
 
     const spawnBall = (data) => {

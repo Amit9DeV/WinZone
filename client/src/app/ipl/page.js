@@ -26,7 +26,8 @@ export default function IPLPage() {
     const [result, setResult] = useState(null);
 
     useEffect(() => {
-        const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:50001'}/ipl`, {
+        const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const newSocket = io(`${SOCKET_URL}/ipl`, {
             // In real app, pass auth token here
         });
 

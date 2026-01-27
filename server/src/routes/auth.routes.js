@@ -14,7 +14,7 @@ const router = express.Router();
  */
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, referralCode } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -32,14 +32,30 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Handle Referral
+    let referredBy = null;
+    if (referralCode) {
+      const referrer = await User.findOne({ referralCode });
+      if (referrer) {
+        referredBy = referrer._id;
+        referrer.referralCount += 1;
+        await referrer.save();
+      }
+    }
+
     // Create user (password stored as plain text for demo)
-    const user = await User.create({
+    const user = new User({
       name,
       email,
       password, // In production, hash this
       role: 'USER',
       balance: 0,
+      referredBy
     });
+
+    // Generate own referral code
+    user.generateReferralCode();
+    await user.save();
 
     // Generate token
     const token = jwt.sign(
@@ -52,7 +68,7 @@ router.post('/register', async (req, res) => {
       success: true,
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
           name: user.name,
           email: user.email,
           balance: user.balance,
@@ -99,7 +115,7 @@ router.post('/login', async (req, res) => {
         success: true,
         data: {
           user: {
-            id: 'admin',
+            _id: 'admin',
             name: 'Admin',
             email: adminUser,
             balance: 0,
@@ -138,7 +154,7 @@ router.post('/login', async (req, res) => {
       success: true,
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
           name: user.name,
           email: user.email,
           balance: user.balance,
@@ -177,7 +193,7 @@ router.get('/verify', async (req, res) => {
         success: true,
         data: {
           user: {
-            id: 'admin',
+            _id: 'admin',
             name: 'Admin',
             email: process.env.ADMIN_USERNAME || 'admin',
             balance: 0,
@@ -200,7 +216,7 @@ router.get('/verify', async (req, res) => {
       success: true,
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
           name: user.name,
           email: user.email,
           balance: user.balance,

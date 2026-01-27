@@ -4,175 +4,174 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { adminAPI } from '@/lib/api';
+import StatsCard from '@/components/Analytics/StatsCard';
+import ProfitChart from '@/components/Analytics/ProfitChart';
+import GamePerformance from '@/components/Analytics/GamePerformance';
 import {
   Users,
   Wallet,
   TrendingUp,
   Activity,
-  ArrowUpRight,
-  ArrowDownRight
+  DollarSign,
+  Gamepad2,
+  PieChart
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar
-} from 'recharts';
 import { motion } from 'framer-motion';
-
-const StatCard = ({ title, value, icon: Icon, trend, color }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-700"
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-400 mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-white">{value}</h3>
-      </div>
-      <div className={`p-3 rounded-lg ${color} bg-opacity-20`}>
-        <Icon size={24} className={color.replace('bg-', 'text-')} />
-      </div>
-    </div>
-    <div className="mt-4 flex items-center text-sm">
-      <span className={`flex items-center ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-        {trend >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-        <span className="ml-1">{Math.abs(trend)}%</span>
-      </span>
-      <span className="text-gray-500 ml-2">vs last month</span>
-    </div>
-  </motion.div>
-);
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalDeposits: 0,
-    activeGames: 0,
-    pendingRequests: 0
+    allTime: { ggr: 0, totalWagered: 0, totalPayout: 0, betCount: 0, rtp: 0 },
+    today: { ggr: 0, totalWagered: 0, totalPayout: 0, betCount: 0 },
+    activeUsers24h: 0
   });
+  const [gameStats, setGameStats] = useState([]);
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     } else if (user && user.role === 'ADMIN') {
-      fetchDashboardData();
+      fetchAnalytics();
     }
   }, [user, authLoading, router]);
 
-  const fetchDashboardData = async () => {
+  const fetchAnalytics = async () => {
     try {
-      const response = await adminAPI.getStats();
-      if (response.data.success) {
-        setStats(response.data.data);
-        setChartData(response.data.data.chartData || []);
-      }
+      setLoading(true);
+      const [dashRes, gamesRes, chartRes] = await Promise.all([
+        adminAPI.getAnalyticsDashboard(),
+        adminAPI.getGamePerformance(),
+        adminAPI.getPnlChart()
+      ]);
+
+      if (dashRes.data.success) setStats(dashRes.data.data);
+      if (gamesRes.data.success) setGameStats(gamesRes.data.data);
+      if (chartRes.data.success) setChartData(chartRes.data.data);
+
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Analytics Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (authLoading || !user) return null;
+  if (loading) return <div className="text-center py-20 text-gray-400">Loading Mission Control...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
-        <div className="text-sm text-gray-400">Last updated: {new Date().toLocaleTimeString()}</div>
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tight">Mission Control</h1>
+          <p className="text-gray-400 text-sm">Real-time financial overview</p>
+        </div>
+        <button
+          onClick={fetchAnalytics}
+          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors"
+        >
+          Refresh Data
+        </button>
       </div>
 
-      {/* Stats Grid */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Users"
-          value={stats.totalUsers}
-          icon={Users}
-          trend={12}
-          color="bg-blue-500"
+        <StatsCard
+          title="Gross Gaming Revenue (All Time)"
+          value={`₹${stats.allTime.ggr.toLocaleString()}`}
+          subtext={`Margin: ${(100 - stats.allTime.rtp).toFixed(2)}%`}
+          icon={DollarSign}
+          color={stats.allTime.ggr >= 0 ? 'green' : 'red'}
+          delay={0}
         />
-        <StatCard
-          title="Total Deposits"
-          value={`₹${stats.totalDeposits?.toFixed(0) || 0}`}
+        <StatsCard
+          title="Total Wagered"
+          value={`₹${stats.allTime.totalWagered.toLocaleString()}`}
+          subtext={`${stats.allTime.betCount.toLocaleString()} Total Bets`}
           icon={Wallet}
-          trend={8}
-          color="bg-green-500"
+          color="blue"
+          delay={0.1}
         />
-        <StatCard
-          title="Active Games"
-          value={stats.activeGames}
+        <StatsCard
+          title="Today's GGR"
+          value={`₹${stats.today.ggr.toLocaleString()}`}
+          subtext={`Vol: ₹${stats.today.totalWagered.toLocaleString()}`}
           icon={TrendingUp}
-          trend={0}
-          color="bg-purple-500"
+          color={stats.today.ggr >= 0 ? 'purple' : 'orange'}
+          delay={0.2}
         />
-        <StatCard
-          title="Pending Requests"
-          value={stats.pendingRequests}
-          icon={Activity}
-          trend={-5}
-          color="bg-orange-500"
+        <StatsCard
+          title="Active Players (24h)"
+          value={stats.activeUsers24h}
+          subtext="Unique bettors"
+          icon={Users}
+          color="white"
+          delay={0.3}
         />
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
+      {/* Main Charts Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profit Chart (2/3 width) */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-700"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6"
         >
-          <h3 className="text-lg font-bold text-white mb-4">Revenue Overview</h3>
-          <div className="h-64 md:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1f2937', borderRadius: '8px', border: '1px solid #374151', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-white flex gap-2 items-center">
+              <Activity className="text-green-500" size={20} />
+              Profit & Loss (7 Days)
+            </h3>
           </div>
+          <ProfitChart data={chartData} />
         </motion.div>
 
-        {/* User Activity Chart */}
+        {/* Top/Bottom Games or Quick Stats (1/3 width) */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-700"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
         >
-          <h3 className="text-lg font-bold text-white mb-4">User Activity</h3>
-          <div className="h-64 md:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: '#374151', opacity: 0.4 }}
-                  contentStyle={{ backgroundColor: '#1f2937', borderRadius: '8px', border: '1px solid #374151', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Bar dataKey="users" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <h3 className="text-lg font-bold text-white mb-6 flex gap-2 items-center">
+            <PieChart className="text-blue-500" size={20} />
+            Platform Health
+          </h3>
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between text-sm mb-2 text-gray-400">
+                <span>Global RTP (Return to Player)</span>
+                <span className="text-white">{stats.allTime.rtp.toFixed(2)}%</span>
+              </div>
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${stats.allTime.rtp > 100 ? 'bg-red-500' : 'bg-blue-500'}`}
+                  style={{ width: `${Math.min(stats.allTime.rtp, 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Target RTP: 96% - 99%. Values {'>'} 100% mean the house is losing money.
+              </p>
+            </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Game Performance Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+        className="bg-gray-900 border border-gray-800 rounded-2xl p-6 overflow-hidden"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-white flex gap-2 items-center">
+            <Gamepad2 className="text-purple-500" size={20} />
+            Game Performance
+          </h3>
+        </div>
+        <GamePerformance data={gameStats} />
+      </motion.div>
+
     </div>
   );
 }

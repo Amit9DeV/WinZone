@@ -339,6 +339,27 @@ router.get('/wallet/history', async (req, res) => {
   }
 });
 
+/**
+ * Get Risk Dashboard Data
+ * GET /api/admin/risk/dashboard
+ */
+router.get('/risk/dashboard', async (req, res) => {
+  try {
+    const riskService = require('../services/risk.service');
+    const [whales, alerts] = await Promise.all([
+      riskService.getWhales(),
+      riskService.getRiskAlerts()
+    ]);
+
+    res.json({
+      success: true,
+      data: { whales, alerts }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
 
 

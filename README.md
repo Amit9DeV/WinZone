@@ -1,167 +1,296 @@
-# WinZone Gaming Platform
+# 🎰 WinZone - Full-Stack Gaming Platform
 
-WinZone is a comprehensive, full-stack online gaming platform featuring a robust backend, a modern Next.js client, and a high-performance, real-time Aviator game module.
+**WinZone** is a modern, real-time online gaming platform built with cutting-edge web technologies. Play 10+ provably fair games, manage your wallet, chat with players, and compete on leaderboards!
 
-## 🚀 Features
+---
 
-### ✈️ Aviator Game
-*   **Real-Time Multiplayer**: Seamless WebSocket-based gameplay with synchronized state across all clients.
-*   **Provably Fair Logic**: Server-side crash generation with configurable probability distributions.
-*   **Smart Bots**: 15-40 intelligent bots per round that place bets and cash out realistically to simulate a lively environment.
-*   **Live Bet History**: "All Bets" panel showing real-time bets from bots and real users.
-*   **Top Wins**: Leaderboard displaying daily, monthly, and yearly top winners.
-*   **Auto-Bet & Auto-Cashout**: Fully functional automation tools for players.
-*   **Dual Betting**: Support for placing two simultaneous bets in a single round.
+## 🎮 Games Library
 
-### 💰 Wallet & Economy
-*   **Balance Management**: Secure deposit and withdrawal request system.
-*   **Transaction History**: Detailed logs of all financial activities.
-*   **Admin Approval**: Manual admin verification for deposit/withdrawal requests.
+### 1. **Dice** 🎲
+Roll the dice and predict Over or Under a target number.
+- **Features**: Dynamic odds, 2-98 target range, up to 990x multiplier
+- **Min Bet**: ₹10
+- **Strategy**: Lower targets = higher risk/reward
 
-### 👤 User System
-*   **Authentication**: JWT-based secure login and registration.
-*   **Profiles**: Customizable user profiles with avatars.
-*   **Statistics**: Comprehensive game stats (total bets, wins, losses, profit).
+### 2. **Mines** 💣
+Reveal tiles to find diamonds while avoiding bombs.
+- **Features**: 5×5 grid, adjustable bomb count (1-24), increasing multipliers
+- **Min Bet**: ₹10
+- **Strategy**: Cash out early or risk it for higher multipliers
 
-### 🛠️ Admin Dashboard
-*   **Game Control**: Monitor active games and force crash rounds if necessary.
-*   **User Management**: View and manage user accounts.
-*   **Financial Oversight**: Approve or reject wallet requests.
+### 3. **Slots** 🍒
+Classic 3-reel slot machine with various symbol combinations.
+- **Features**: 6 symbols, auto-spin animation, instant results
+- **Payouts**: 5x to 200x (🍀🍀🍀 = 200x!)
+- **Min Bet**: ₹10
+
+### 4. **Plinko** 🎯
+Drop balls through pegs to land in multiplier slots.
+- **Features**: Adjustable rows (8-16), risk levels, auto-bet mode
+- **Multipliers**: Up to 110x on edge slots
+- **Min Bet**: ₹10
+
+### 5. **Limbo** 🚀
+Guess if the multiplier will go higher than your target.
+- **Features**: Set target multipliers, 99% win chance at 1.01x
+- **Max Multiplier**: Unlimited (theoretical)
+- **Min Bet**: ₹10
+
+### 6. **Keno** 🎱
+Pick up to 10 numbers from 80, match drawn numbers to win.
+- **Features**: 20 numbers drawn per round, dynamic payouts based on hits
+- **Animated Drawing**: Number reveal animation
+- **Min Bet**: ₹10
+
+### 7. **Wheel** 🎡
+Spin the color wheel and bet on where it lands.
+- **Features**: 6 color segments, multipliers from 2x to 5x
+- **Colors**: Red, Blue, Green, Yellow, Orange, Purple
+- **Min Bet**: ₹10
+
+### 8. **Triple Number** 🔢
+Fast-paced social betting - pick 1, 2, or 3 before time runs out!
+- **Features**: 20-second rounds, 2.8x multiplier, community results
+- **Timer**: Live countdown, betting window closes at 3s
+- **Min Bet**: ₹10
+
+### 9. **Coin Flip** 🪙
+Classic heads or tails - 50/50 chance to double your money.
+- **Features**: Instant results, 2x payout, simple gameplay
+- **Min Bet**: ₹10
+
+### 10. **Color Prediction** 🌈
+Predict the winning color from multiple options.
+- **Features**: Multiple color choices, varying odds
+- **Min Bet**: ₹10
+
+---
+
+## ✨ Platform Features
+
+### 💰 **Wallet System**
+- Real-time balance updates via WebSocket
+- Deposit & withdrawal requests
+- Transaction history
+- Admin approval workflow
+
+### 🎁 **Daily Rewards**
+- Login streak system (7 days)
+- Incremental rewards: ₹10 → ₹100
+- Confetti celebration on claim
+- Auto-popup on login
+
+### 💬 **Global Chat**
+- Real-time messaging with Socket.IO
+- 200 character limit
+- 2-second cooldown (rate limiting)
+- Message history (last 50 messages)
+- Mobile-optimized sidebar
+
+### 🤖 **Help Chatbot**
+- Floating assistant button
+- Pre-defined FAQs (Getting Started, Games, Account)
+- Expandable categories
+- Custom question input
+- "Back to Menu" navigation
+
+### 📊 **User Dashboard**
+- Game statistics (wins, losses, profit)
+- Bet history
+- Profile customization
+- Avatar upload
+
+### 🌐 **Multi-Language Support**
+- English & Hindi
+- Language toggle in navigation
+- Persistent language preference
+
+### 🔔 **Notifications**
+- Toast notifications for wins/losses
+- Real-time game updates
+- Balance change alerts
+
+### 📱 **Mobile Responsive**
+- Optimized for all screen sizes
+- Touch-friendly controls
+- Full-screen chat on mobile
+- Adaptive grid layouts
+
+### ⏱️ **Server Status Detection**
+- Loading screen for cold starts (Render.com)
+- Countdown timer & status messages
+- Auto-reconnection logic
+- Health check polling (3s interval)
 
 ---
 
 ## 🛠️ Tech Stack
 
-*   **Frontend (Client)**: Next.js 14, React 18, TailwindCSS
-*   **Frontend (Aviator)**: React 18, TypeScript, Unity WebGL (for animations)
-*   **Backend**: Node.js, Express.js
-*   **Database**: MongoDB (Mongoose)
-*   **Real-Time**: Socket.IO (v4)
-*   **Authentication**: JSON Web Tokens (JWT)
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **UI**: React 18, TailwindCSS
+- **Animations**: Framer Motion
+- **State**: Context API (Auth, Language, Server Status)
+- **Real-time**: Socket.IO Client
+- **Forms**: React Hot Toast
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (Mongoose)
+- **Authentication**: JWT (JSON Web Tokens)
+- **Real-time**: Socket.IO Server
+- **File Upload**: Multer
+
+### Game Engines
+Each game has a dedicated Socket.IO namespace with server-side logic:
+- `/dice`, `/mines`, `/slots`, `/plinko`, `/limbo`, `/keno`, `/wheel`, `/triple-number`, etc.
+- Provably fair random generation
+- Server-authoritative game state
 
 ---
 
-## 📚 API Documentation
-
-### Authentication (`/api/auth`)
-| Method | Endpoint | Description | Body |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/register` | Register a new user | `{ name, email, password }` |
-| `POST` | `/login` | Login user | `{ email, password }` |
-| `GET` | `/verify` | Verify JWT token | Header: `Authorization: Bearer <token>` |
-
-### User (`/api/users`)
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/profile` | Get current user profile | Yes |
-| `GET` | `/stats` | Get user game statistics | Yes |
-| `GET` | `/activity` | Get recent activity log | Yes |
-| `POST` | `/my-info` | Get bet history (Aviator) | No (uses name) |
-| `GET` | `/get-day-history` | Top wins of the day | No |
-| `GET` | `/get-month-history` | Top wins of the month | No |
-| `GET` | `/get-year-history` | Top wins of the year | No |
-
-### Wallet (`/api/wallet`)
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/balance` | Get current wallet balance | Yes |
-| `POST` | `/request` | Request deposit/withdraw | Yes |
-| `GET` | `/requests` | View request history | Yes |
-
-### Games (`/api/games`)
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/` | List all available games | No |
-| `GET` | `/:gameId` | Get game details | No |
-| `GET` | `/:gameId/state` | Get current game state | Yes |
-
----
-
-## 🔌 Socket.IO Events (Aviator)
-
-Namespace: `/aviator`
-
-### Client -> Server
-*   `enterRoom`: Join the game room (requires token).
-*   `bet:place`: Place a bet. Payload: `{ betAmount, target, type, auto }`.
-*   `bet:cashout`: Cash out a bet. Payload: `{ type, endTarget }`.
-
-### Server -> Client
-*   `gameState`: Updates game phase (WAITING, FLYING, CRASHED).
-*   `game:waiting`: Round starts waiting phase.
-*   `game:start`: Plane takes off.
-*   `game:update`: Multiplier update (20Hz).
-*   `game:crash`: Round crashed.
-*   `bet:placed`: Confirmation of bet placement.
-*   `cashout:success`: Confirmation of cashout.
-*   `bettedUserInfo`: List of all active bets (Real Users + Bots).
-*   `finishGame`: End of round summary (resets UI).
-*   `myInfo`: Balance updates.
-
----
-
-## ⚙️ Setup & Installation
+## 🚀 Getting Started
 
 ### Prerequisites
-*   Node.js (v16 or higher)
-*   MongoDB (Local or Atlas)
+- Node.js v16+
+- MongoDB (local or Atlas)
+- npm or yarn
 
-### 1. Install Dependencies
-Run the following commands in the respective directories:
+### Installation
 
+1. **Clone the repository**
 ```bash
-# Client
-cd client
-npm install
+git clone https://github.com/Amit9DeV/WinZone.git
+cd WinZone
+```
 
+2. **Install dependencies**
+```bash
 # Server
-cd ../server
+cd server
 npm install
 
-# Aviator Game
-cd ../Aviator
+# Client
+cd ../client
+npm install
+
+# Admin (optional)
+cd ../admin
 npm install
 ```
 
-### 2. Configuration
-Create `.env` files in `client/` and `server/` based on your environment.
+3. **Configure environment variables**
 
-**Server `.env`**:
+**Server** (`server/.env`):
 ```env
 PORT=5001
 MONGODB_URI=mongodb://localhost:27017/winzone
-JWT_SECRET=your_secret_key
-CORS_ORIGIN=http://localhost:3000,http://localhost:3001
+JWT_SECRET=your_secret_key_here
+CORS_ORIGIN=http://localhost:3000
 ```
 
-**Client `.env`**:
+**Client** (`client/.env.local`):
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5001/api
+NEXT_PUBLIC_SOCKET_URL=http://localhost:5001
 ```
 
-**Aviator Config**:
-Edit `Aviator/src/config.json` to point to your server URL.
+4. **Run the application**
 
-### 3. Running the Application
-You must run all three components simultaneously.
+Open 2 terminals:
 
-**Terminal 1: Server**
+**Terminal 1 - Server**:
 ```bash
 cd server
 npm run dev
 ```
 
-**Terminal 2: Client**
+**Terminal 2 - Client**:
 ```bash
 cd client
 npm run dev
 ```
 
-**Terminal 3: Aviator**
-```bash
-cd Aviator
-npm start
+5. **Access the app**
+- Client: http://localhost:3000
+- API: http://localhost:5001/api
+
+---
+
+## 📁 Project Structure
+
+```
+WinZone/
+├── client/                 # Next.js frontend
+│   ├── src/
+│   │   ├── app/           # App router pages
+│   │   │   ├── dice/
+│   │   │   ├── mines/
+│   │   │   ├── slots/
+│   │   │   └── ...
+│   │   ├── components/    # Reusable components
+│   │   ├── context/       # React contexts
+│   │   └── lib/           # Utilities & API client
+│   └── public/            # Static assets
+├── server/                # Express backend
+│   └── src/
+│       ├── games/         # Game engines
+│       ├── middleware/    # Auth, CORS, etc.
+│       ├── models/        # Mongoose schemas
+│       ├── routes/        # API routes
+│       └── server.js      # Entry point
+└── admin/                 # Admin dashboard (optional)
 ```
 
-Access the main application at `http://localhost:3000`.
-The Aviator game runs on `http://localhost:3001` but is embedded/linked from the main client.
+---
+
+## 🎯 Features Roadmap
+
+- [x] 10+ Games
+- [x] Real-time multiplayer
+- [x] Wallet system
+- [x] Daily rewards
+- [x] Global chat
+- [x] Help chatbot
+- [x] Mobile responsive
+- [x] Server cold start detection
+- [ ] Leaderboards
+- [ ] Tournaments
+- [ ] Referral system
+- [ ] Social login (Google, Facebook)
+- [ ] Payment gateway integration
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Fork the repo and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Developer
+
+Built with ❤️ by **Amit9DeV**
+
+- GitHub: [@Amit9DeV](https://github.com/Amit9DeV)
+- Portfolio: [Coming Soon]
+
+---
+
+## 🙏 Acknowledgments
+
+- Socket.IO for real-time communication
+- Next.js team for the amazing framework
+- Tailwind Labs for TailwindCSS
+- Framer Motion for smooth animations
+
+---
+
+**Star ⭐ this repo if you found it helpful!**

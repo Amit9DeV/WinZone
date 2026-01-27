@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,11 +13,21 @@ export default function RegisterPage() {
         name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        referralCode: ''
     });
     const [loading, setLoading] = useState(false);
     const { register } = useAuth();
     const router = useRouter();
+
+    // Auto-fill referral code from URL
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const refParam = params.get('ref');
+        if (refParam) {
+            setFormData(prev => ({ ...prev, referralCode: refParam }));
+        }
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +39,7 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            const result = await register(formData.name, formData.email, formData.password);
+            const result = await register(formData.name, formData.email, formData.password, formData.referralCode);
             if (result.success) {
                 toast.success('Account created successfully!');
                 router.push('/');
@@ -125,6 +135,18 @@ export default function RegisterPage() {
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1.5">Referral Code (Optional)</label>
+                                <Input
+                                    icon={User}
+                                    type="text"
+                                    placeholder="REF123"
+                                    value={formData.referralCode}
+                                    onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
+                                    className="uppercase font-mono"
                                 />
                             </div>
                         </div>

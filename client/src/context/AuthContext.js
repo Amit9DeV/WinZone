@@ -1,8 +1,9 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authAPI, userAPI, walletAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { io } from 'socket.io-client';
 
 const AuthContext = createContext(null);
 
@@ -82,9 +83,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, referralCode) => {
     try {
-      const response = await authAPI.register({ name, email, password });
+      const response = await authAPI.register({ name, email, password, referralCode });
       if (response.data.success) {
         const { user, token } = response.data.data;
         localStorage.setItem('token', token);
@@ -109,11 +110,62 @@ export function AuthProvider({ children }) {
     router.push('/login');
   };
 
-  const updateBalance = (newBalance) => {
-    setBalance(newBalance);
-  };
+  // WebSocket Connection
+  useEffect(() => {
+    let socket;
 
-  const value = {
+    if (user) {
+      const userId = user._id || user.id;
+
+      if (userId) {
+        // Define socket URL based on environment or fallback to production
+        const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL
+          ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
+          : 'https://winzone-final.onrender.com';
+
+        console.log('🔌 Initializing Socket.IO connection to:', SOCKET_URL, 'for User:', userId);
+
+        socket = io(SOCKET_URL, {
+          query: { userId: userId },
+          transports: ['websocket', 'polling'], // Try websocket first
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+        });
+
+        socket.on('connect', () => {
+          console.log('✅ Socket connected successfully:', socket.id);
+          // Auto-fetch balance on connect to ensure sync
+          fetchBalance();
+        });
+
+        socket.on('connect_error', (err) => {
+          console.error('❌ Socket connection error:', err.message);
+        });
+
+        socket.on('user:balance', (newBalance) => {
+          console.log('💰 WebSocket Balance Update:', newBalance);
+          setBalance(newBalance);
+        });
+
+        socket.on('disconnect', (reason) => {
+          console.warn('⚠️ Socket disconnected:', reason);
+        });
+      }
+    }
+
+    return () => {
+      if (socket) {
+        console.log('🔌 Cleaning up socket connection');
+        socket.disconnect();
+      }
+    };
+  }, [user]);
+
+  const updateBalance = useCallback((newBalance) => {
+    setBalance(newBalance);
+  }, []);
+
+  const value = useMemo(() => ({
     user,
     setUser,
     balance,
@@ -125,7 +177,7 @@ export function AuthProvider({ children }) {
     fetchBalance,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',
-  };
+  }), [user, balance, loading, updateBalance]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

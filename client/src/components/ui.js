@@ -1,6 +1,5 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { motion } from 'framer-motion';
 
 export function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -15,18 +14,16 @@ export const Button = ({ children, variant = 'primary', className, ...props }) =
     };
 
     return (
-        <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        <button
             className={cn(
-                'px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2',
+                'px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 active:scale-95',
                 variants[variant],
                 className
             )}
             {...props}
         >
             {children}
-        </motion.button>
+        </button>
     );
 };
 

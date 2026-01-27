@@ -10,6 +10,11 @@ export default function Navbar() {
 
   if (!user) return null;
 
+  // Debug balance changes
+  // useEffect(() => {
+  //   console.log('Navbar Balance:', balance);
+  // }, [balance]);
+
   return (
     <nav className="bg-gray-900 text-white shadow-lg">
       <div className="container mx-auto px-4 py-3">
@@ -21,34 +26,37 @@ export default function Navbar() {
             <div className="hidden md:flex space-x-4">
               <Link
                 href="/"
-                className={`px-3 py-2 rounded ${
-                  pathname === '/' ? 'bg-blue-600' : 'hover:bg-gray-800'
-                }`}
+                className={`px-3 py-2 rounded ${pathname === '/' ? 'bg-blue-600' : 'hover:bg-gray-800'
+                  }`}
               >
                 Games
               </Link>
               <Link
                 href="/profile"
-                className={`px-3 py-2 rounded ${
-                  pathname === '/profile' ? 'bg-blue-600' : 'hover:bg-gray-800'
-                }`}
+                className={`px-3 py-2 rounded ${pathname === '/profile' ? 'bg-blue-600' : 'hover:bg-gray-800'
+                  }`}
               >
                 Profile
               </Link>
               <Link
                 href="/wallet"
-                className={`px-3 py-2 rounded ${
-                  pathname === '/wallet' ? 'bg-blue-600' : 'hover:bg-gray-800'
-                }`}
+                className={`px-3 py-2 rounded ${pathname === '/wallet' ? 'bg-blue-600' : 'hover:bg-gray-800'
+                  }`}
               >
                 Wallet
+              </Link>
+              <Link
+                href="/referral"
+                className={`flex items-center gap-1 px-3 py-2 rounded ${pathname === '/referral' ? 'bg-blue-600' : 'hover:bg-gray-800'
+                  }`}
+              >
+                🤝 Refer
               </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className={`px-3 py-2 rounded ${
-                    pathname === '/admin' ? 'bg-blue-600' : 'hover:bg-gray-800'
-                  }`}
+                  className={`px-3 py-2 rounded ${pathname === '/admin' ? 'bg-blue-600' : 'hover:bg-gray-800'
+                    }`}
                 >
                   Admin
                 </Link>

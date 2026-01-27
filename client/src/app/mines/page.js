@@ -20,7 +20,7 @@ const MINES_RULES = [
 ];
 
 export default function MinesPage() {
-    const { user, updateBalance } = useAuth();
+    const { user, balance, updateBalance } = useAuth();
     const [socket, setSocket] = useState(null);
 
     const [gameState, setGameState] = useState('IDLE'); // IDLE, PLAYING, CASHED_OUT, BOOM
@@ -33,7 +33,8 @@ export default function MinesPage() {
 
     useEffect(() => {
         // Use the same IP as api.js for mobile compatibility
-        const url = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://winzone-final.onrender.com'}/mines`;
+        const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const url = `${SOCKET_URL}/mines`;
         console.log('Connecting to Mines Socket:', url);
         const newSocket = io(url);
         setSocket(newSocket);
@@ -97,15 +98,19 @@ export default function MinesPage() {
     }, []);
 
     const startGame = () => {
-        console.log('startGame called', { user, betAmount, balance: user?.balance });
+        console.log('startGame called', { user, betAmount, balance: balance });
         if (!user) return toast.error('Login to play');
-        if (betAmount > user.balance) return toast.error('Insufficient Balance');
+        if (betAmount > balance) return toast.error('Insufficient Balance');
 
         // Reset grid locally to hidden for nice transition
         setGrid(Array(25).fill({ revealed: false, isMine: false }));
 
         console.log('Emitting game:start');
-        socket.emit('game:start', { userId: user._id || user.id, betAmount, mineCount });
+        socket.emit('game:start', {
+            userId: user._id || user.id,
+            betAmount,
+            mineCount
+        });
     };
 
     const handleTileClick = (index) => {
@@ -207,7 +212,7 @@ export default function MinesPage() {
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[500px] bg-black/20 rounded-3xl border border-white/5 relative overflow-hidden p-8">
                     <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-20"></div>
 
-                    <div className={`grid grid-cols-5 gap-3 md:gap-4 w-full max-w-md aspect-square ${gameState === 'BOOM' ? 'animate-shake' : ''}`}>
+                    <div className={`grid grid-cols-5 gap-2 md:gap-3 w-full max-w-md aspect-square ${gameState === 'BOOM' ? 'animate-shake' : ''}`}>
                         {grid.map((tile, i) => (
                             <motion.button
                                 key={i}

@@ -7,13 +7,16 @@ import { useAuth } from '@/context/AuthContext';
 import { User, Mail, Shield, Key, Camera } from 'lucide-react';
 import { userAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
+import ProfitChart from '@/components/Charts/ProfitChart';
+import WinRateChart from '@/components/Charts/WinRateChart';
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { user, balance, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [bets, setBets] = useState([]);
+  const [chartData, setChartData] = useState({ daily: [], summary: {} });
 
   useEffect(() => {
     if (user) {
@@ -24,9 +27,15 @@ export default function ProfilePage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, betsRes] = await Promise.all([
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com/api';
+      const token = localStorage.getItem('token');
+
+      const [statsRes, betsRes, chartRes] = await Promise.all([
         userAPI.getProfile(),
-        userAPI.getBets({ limit: 20 })
+        userAPI.getBets({ limit: 20 }),
+        fetch(`${API_URL}/stats/chart?period=7d`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ]);
 
       if (statsRes.data.success) {
@@ -34,6 +43,10 @@ export default function ProfilePage() {
       }
       if (betsRes.data.success) {
         setBets(betsRes.data.data.bets);
+      }
+      if (chartRes.ok) {
+        const data = await chartRes.json();
+        setChartData(data);
       }
     } catch (error) {
       console.error('Failed to fetch profile data', error);
@@ -149,9 +162,9 @@ export default function ProfilePage() {
             <Card>
               <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider mb-4">Statistics</h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="text-gray-300">Current Balance</span>
-                  <span className="font-bold text-green-400">₹{Math.floor(user?.balance || 0)}</span>
+                <div className="bg-surface-2 p-3 rounded flex justify-between items-center">
+                  <span className="text-gray-400">Balance</span>
+                  <span className="font-bold text-green-400">₹{Math.floor(balance || 0)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-white/5">
                   <span className="text-gray-300">Total Bets</span>
@@ -272,6 +285,17 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
+
+        {/* Analytics Charts Section */}
+        {chartData.daily && chartData.daily.length > 0 && (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ProfitChart data={chartData.daily} />
+            <WinRateChart
+              wins={chartData.summary?.wins || 0}
+              losses={chartData.summary?.losses || 0}
+            />
+          </div>
+        )}
 
         {/* Bet History Section */}
         <div className="mt-8">

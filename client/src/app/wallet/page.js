@@ -9,11 +9,11 @@ import { walletAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function WalletPage() {
-  const { user } = useAuth();
+  const { user, balance, loading: authLoading } = useAuth(); // Renamed loading from useAuth to avoid conflict
   const [activeTab, setActiveTab] = useState('deposit');
   const [amount, setAmount] = useState('');
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Local loading state for deposit action
 
   useEffect(() => {
     fetchRequests();
@@ -38,7 +38,7 @@ export default function WalletPage() {
 
     setLoading(true);
     try {
-      const response = await walletAPI.requestDeposit(Number(amount));
+      const response = await walletAPI.requestBalance(Number(amount));
       if (response.data.success) {
         toast.success('Deposit request submitted successfully!');
         setAmount('');
@@ -75,8 +75,8 @@ export default function WalletPage() {
                     INR
                   </div>
                 </div>
-                <div className="text-5xl md:text-6xl font-bold mb-8 tracking-tight drop-shadow-md">
-                  ₹{Math.floor(user?.balance || 0).toLocaleString()}
+                <div className="text-3xl font-bold text-white">
+                  ₹{Math.floor(balance || 0).toLocaleString()}
                 </div>
               </div>
 
@@ -141,15 +141,49 @@ export default function WalletPage() {
                   ))}
                 </div>
               </div>
-
-              <Button
-                className="w-full py-4 text-lg mt-4"
-                onClick={handleDeposit}
-                disabled={loading}
-              >
-                {loading ? 'Processing...' : 'Proceed to Pay'}
-              </Button>
             </div>
+
+            {/* Promo Code Section */}
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-dashed border-gray-600 mt-6">
+              <label className="block text-sm text-gray-400 mb-2">Have a Promo Code?</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="WELCOME100"
+                  className="uppercase"
+                  id="promo-input"
+                />
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const code = document.getElementById('promo-input').value;
+                    if (!code) return toast.error('Enter a code');
+                    try {
+                      const res = await walletAPI.redeemPromo(code);
+                      if (res.data.success) {
+                        toast.success(res.data.message);
+                        document.getElementById('promo-input').value = '';
+                        // Reload user profile/balance ideally, but context might handle it if we trigger reload?
+                        // For now, simpler to just let page refresh or notify user.
+                        // Actually useAuth might not auto-refresh unless we trigger it.
+                        window.location.reload();
+                      }
+                    } catch (e) {
+                      toast.error(e.response?.data?.message || 'Invalid Code');
+                    }
+                  }}
+                >
+                  Redeem
+                </Button>
+              </div>
+            </div>
+
+            <Button
+              className="w-full py-4 text-lg mt-4"
+              onClick={handleDeposit}
+              disabled={loading}
+            >
+              {loading ? 'Processing...' : 'Proceed to Pay'}
+            </Button>
           </Card>
         </div>
 
