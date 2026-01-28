@@ -7,13 +7,18 @@ const leaderboardEntrySchema = new mongoose.Schema({
     totalWagered: Number,
     totalWon: Number,
     totalProfit: Number,
-    winRate: Number
+    winRate: Number,
+    // For Biggest Win Leaderboard
+    gameId: String,
+    multiplier: Number,
+    betAmount: Number,
+    payout: Number
 });
 
 const leaderboardSchema = new mongoose.Schema({
     period: {
         type: String,
-        enum: ['daily', 'weekly', 'monthly', 'all-time'],
+        enum: ['daily', 'weekly', 'monthly', 'all-time', 'biggest-win'],
         required: true
     },
     date: {

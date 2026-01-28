@@ -20,8 +20,8 @@ if (process.env.REACT_APP_API_URL) {
 
 // Ensure wss is set (critical for Socket.IO)
 if (!config.wss) {
-  config.wss = 'http://localhost:5001';
-  console.warn('⚠️ WebSocket URL not configured, using default: http://localhost:5001');
+  config.wss = 'https://winzone-final.onrender.com';
+  console.warn('⚠️ WebSocket URL not configured, using default: https://winzone-final.onrender.com');
 }
 
 console.log('🔧 Config loaded:', {

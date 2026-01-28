@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
       const userId = user._id || user.id;
 
       if (userId) {
-        // Define socket URL based on environment or fallback to production
+        // Define socket URL based on environment or fallback to localhost:5001
         const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL
           ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
           : 'https://winzone-final.onrender.com';

@@ -32,7 +32,7 @@ export default function WheelPage() {
 
     // Initialize Socket
     useEffect(() => {
-        const url = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
+        const url = process.env.NEXT_PUBLIC_SOCKET_URL;
         const newSocket = io(`${url}/wheel`, {
             path: '/socket.io',
             transports: ['websocket'],

@@ -370,7 +370,7 @@ export const Provider = ({ children }: any) => {
     });
 
     socketInstance.on("myBetState", (user: UserType) => {
-      const attrs = userBetState;
+      const attrs = newBetState;
       attrs.fbetState = false;
       attrs.fbetted = user.f.betted;
       attrs.sbetState = false;
@@ -380,7 +380,7 @@ export const Provider = ({ children }: any) => {
 
     socketInstance.on("myInfo", (user: UserType) => {
       console.log('💰 Balance update:', user.balance);
-      let attrs = state;
+      let attrs = newState;
       attrs.userInfo.balance = user.balance;
       attrs.userInfo.userType = user.userType;
       attrs.userInfo.userName = user.userName;
@@ -514,7 +514,7 @@ export const Provider = ({ children }: any) => {
     });
 
     socketInstance.on("cashout:success", (data: any) => {
-      toast.success(`Cashed out at ${data.multiplier}x! Win: ${data.payout.toFixed(2)}`);
+      toast.success(`Cashed out at ${Number(data.multiplier).toFixed(2)}x! Win: ${Number(data.payout).toFixed(2)}`);
 
       // Play cashout sound
       if (state.userInfo.isSoundEnable) {
@@ -587,7 +587,7 @@ export const Provider = ({ children }: any) => {
   React.useEffect(() => {
     let attrs = state;
     let betStatus = userBetState;
-    if (gameState.GameState === "BET") {
+    if (gameState.GameState === "BET" || (gameState.GameState === "PLAYING" && gameState.currentNum < 1.1)) {
       if (betStatus.fbetState) {
         if (state.userInfo.f.auto) {
           if (state.fautoCound > 0) attrs.fautoCound -= 1;

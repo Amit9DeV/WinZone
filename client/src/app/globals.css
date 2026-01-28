@@ -1,27 +1,66 @@
 @import "tailwindcss";
 
 :root {
-  /* Premium Dark Theme Palette */
-  --background: #0f1923; /* Deep Blue-Black */
+  /* =========================
+     DEFAULT THEME (Stake Dark)
+     ========================= */
+  --background: #0f212e;
   --foreground: #ffffff;
-  
-  /* Brand Colors - Neon Green Accents */
-  --primary: #00e701; 
-  --primary-hover: #00ff01;
-  --secondary: #213743; 
-
-  /* Surfaces */
-  --surface-1: #1a2c38; /* Cards/Sidebar */
-  --surface-2: #2f4553; /* Hovers */
-  --surface-3: #07111a; /* Body/Deep Background */
-
-  /* Text */
+  --primary: #00e701;
+  /* Stake Green */
+  --primary-hover: #00c701;
+  --secondary: #213743;
+  --surface-1: #1a2c38;
+  --surface-2: #213743;
+  --surface-3: #07141c;
   --text-muted: #b1bad3;
-
-  /* Status */
   --success: #00e701;
   --warning: #f59e0b;
   --error: #ff4d4d;
+  --accent-glow: rgba(0, 231, 1, 0.15);
+}
+
+[data-theme="light"] {
+  /* =========================
+     LIGHT THEME
+     ========================= */
+  --background: #f4f6f8;
+  --foreground: #1a2c38;
+  --primary: #00e701;
+  /* Keep branding green */
+  --primary-hover: #00c701;
+  --secondary: #dfe4ea;
+  --surface-1: #ffffff;
+  --surface-2: #edf0f2;
+  --surface-3: #e2e8f0;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --accent-glow: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="neon"] {
+  /* =========================
+     NEON THEME (Casino Night)
+     ========================= */
+  --background: #050505;
+  /* Pitch Black */
+  --foreground: #ffffff;
+  --primary: #ff00ff;
+  /* Cyber Pink */
+  --primary-hover: #d900d9;
+  --secondary: #1a1a1a;
+  --surface-1: #0a0a0a;
+  --surface-2: #141414;
+  --surface-3: #000000;
+  --text-muted: #a3a3a3;
+  --success: #00ffea;
+  /* Cyan */
+  --warning: #ffd700;
+  /* Gold */
+  --error: #ff0055;
+  --accent-glow: rgba(255, 0, 255, 0.35);
 }
 
 @theme inline {
@@ -29,92 +68,97 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
   --color-text-muted: var(--text-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-accent-glow: var(--accent-glow);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background-color: var(--surface-3);
+  /* Use deepest color for body background */
   color: var(--foreground);
-  font-family: 'Inter', sans-serif; /* Ensure fonts are loaded in layout if possible */
+  font-family: var(--font-sans), sans-serif;
   overflow-x: hidden;
-  background-image: radial-gradient(circle at 50% 0%, rgba(0, 231, 1, 0.05) 0%, transparent 50%);
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  background: rgba(26, 44, 56, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.glass-panel {
-  background: rgba(33, 55, 67, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
-
-/* Premium Card */
-.stake-card {
-  background-color: var(--surface-1);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.stake-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 40px -10px rgba(0, 231, 1, 0.15);
-  border-color: rgba(0, 231, 1, 0.2);
-}
-
-.stake-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-  transition: 0.5s;
-}
-
-.stake-card:hover::before {
-  left: 100%;
-}
-
-/* Scrollbar */
+/* Custom Scrollbar - Minimal & Dark */
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--surface-3);
+  background: var(--background);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--surface-2);
-  border-radius: 99px;
+  border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--surface-1);
+}
+
+/* Utilities */
+.glass {
+  background: rgba(26, 44, 56, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Stake-style Card */
+.stake-card {
+  background-color: var(--surface-1);
+  border-radius: 0.5rem;
+  /* rounded-lg */
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.stake-card:hover {
+  background-color: var(--surface-2);
+  transform: translateY(-2px);
+}
+
+.text-shadow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Animations */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+@keyframes neon-pulse {
+
+  0%,
+  100% {
+    text-shadow: 0 0 4px var(--primary), 0 0 10px var(--primary), 0 0 20px var(--accent-glow);
+  }
+
+  50% {
+    text-shadow: 0 0 2px var(--primary), 0 0 5px var(--primary), 0 0 15px var(--accent-glow);
+  }
 }
 
-.text-shadow-glow {
-  text-shadow: 0 0 20px rgba(0, 231, 1, 0.5);
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 2s infinite ease-in-out;
 }

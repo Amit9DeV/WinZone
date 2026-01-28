@@ -1,76 +1,88 @@
-/**
- * Risk Management Service
- * Detects suspicious activity and high-value players
- */
 const User = require('../models/User.model');
 const Bet = require('../models/Bet.model');
 
 /**
- * Get "Whales" - Users with high balance or high total wagered
+ * Risk Analysis Service
+ * Detects anomalous behavior and potential fraud
  */
-exports.getWhales = async () => {
-    // Users with Balance > 10,000 or Total Wagered > 100,000
-    const whales = await User.find({
-        $or: [
-            { balance: { $gt: 10000 } },
-            { totalWagered: { $gt: 100000 } }
-        ]
-    })
-        .select('name email balance totalWagered totalWins totalLosses createdAt')
-        .sort({ balance: -1 })
-        .limit(50);
+class RiskService {
 
-    return whales.map(user => ({
-        ...user.toObject(),
-        winRate: (user.totalWins / (user.totalWins + user.totalLosses || 1) * 100).toFixed(1)
-    }));
-};
+    /**
+     * Analyze a user's recent betting history
+     * @param {string} userId 
+     */
+    async analyzeUser(userId) {
+        try {
+            // Fetch last 50 bets
+            const bets = await Bet.find({ userId })
+                .sort({ createdAt: -1 })
+                .limit(50);
 
-/**
- * Get Risk Alerts
- * Users with unusually high win rates or massive single wins
- */
-exports.getRiskAlerts = async () => {
-    const alerts = [];
+            if (bets.length < 10) return; // Not enough data
 
-    // 1. High Win Rate Check (> 70% win rate with > 20 bets)
-    const luckyUsers = await User.find({
-        totalBets: { $gt: 20 }
-    }).lean();
+            let riskScore = 0;
+            let flags = [];
 
-    luckyUsers.forEach(user => {
-        const winRate = (user.totalWins / user.totalBets) * 100;
-        if (winRate > 70) {
-            alerts.push({
-                type: 'HIGH_WIN_RATE',
-                severity: 'medium',
-                userId: user._id,
-                name: user.name,
-                message: `Win Rate: ${winRate.toFixed(1)}% (${user.totalWins}/${user.totalBets})`,
-                timestamp: new Date()
-            });
+            // 1. High Win Rate Check (>90%)
+            const wins = bets.filter(b => b.result === 'WON').length;
+            const winRate = (wins / bets.length) * 100;
+
+            if (winRate > 90) {
+                riskScore += 40;
+                flags.push(`Abnormal Win Rate: ${winRate.toFixed(1)}%`);
+            }
+
+            // 2. ROI Check (Profit vs Wagered)
+            const totalWagered = bets.reduce((sum, b) => sum + b.amount, 0);
+            const totalPayout = bets.reduce((sum, b) => sum + (b.payout || 0), 0);
+            const profit = totalPayout - totalWagered;
+            const roi = totalWagered > 0 ? (profit / totalWagered) * 100 : 0;
+
+            if (roi > 300) { // >300% profit is very suspicious for casino games
+                riskScore += 50;
+                flags.push(`Impossible ROI: ${roi.toFixed(0)}%`);
+            }
+
+            // 3. Sniper Check (High Multiplier Consistency)
+            // If user consistently cashes out > 10x
+            const highMultipliers = bets.filter(b => b.multiplier && b.multiplier > 10).length;
+            if (highMultipliers > 5 && winRate > 50) {
+                riskScore += 30;
+                flags.push('Sniper behavior detected');
+            }
+
+            // Update User Risk Status
+            let newStatus = 'SAFE';
+            if (riskScore >= 80) newStatus = 'SUSPICIOUS';
+            if (riskScore >= 100) newStatus = 'SUSPICIOUS'; // Could auto-ban, but safer to just flag
+
+            if (riskScore > 0) {
+                console.log(`⚠️ Risk Alert [${userId}]: Score ${riskScore} - ${flags.join(', ')}`);
+                await User.findByIdAndUpdate(userId, {
+                    riskScore: Math.min(riskScore, 100),
+                    riskStatus: newStatus
+                });
+            }
+
+            return { riskScore, flags, status: newStatus };
+
+        } catch (error) {
+            console.error('Risk analysis failed:', error);
         }
-    });
+    }
 
-    // 2. Massive Wins (Single payouts > 5000)
-    // In a real app, this would be a separate "Alerts" collection
-    // For MVP, we query recent big bets
-    const bigWins = await Bet.find({
-        payout: { $gt: 5000 },
-        result: 'WON',
-        createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24h
-    }).populate('userId', 'name').limit(20);
+    // Admin Dashboard Helpers
+    async getRiskAlerts() {
+        return await User.find({ riskStatus: 'SUSPICIOUS' })
+            .select('name email riskScore riskStatus balance')
+            .sort({ riskScore: -1 });
+    }
 
-    bigWins.forEach(bet => {
-        alerts.push({
-            type: 'MASSIVE_WIN',
-            severity: 'high',
-            userId: bet.userId?._id,
-            name: bet.userId?.name || 'Unknown',
-            message: `Won ₹${bet.payout} in ${bet.gameId} (${bet.multiplier}x)`,
-            timestamp: bet.createdAt
-        });
-    });
+    async getWhales() {
+        return await User.find({ balance: { $gt: 100000 } })
+            .select('name email balance totalWagered')
+            .sort({ balance: -1 });
+    }
+}
 
-    return alerts.sort((a, b) => b.timestamp - a.timestamp);
-};
+module.exports = new RiskService();

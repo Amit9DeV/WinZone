@@ -5,8 +5,8 @@
 
 import axios from 'axios';
 
-// const API_BASE_URL = 'http://localhost:5001/api';
-const API_BASE_URL = 'https://winzone-final.onrender.com/api';
+// const API_BASE_URL = 'https://winzone-final.onrender.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({
@@ -86,6 +86,7 @@ export const adminAPI = {
     updateUserStatus: (userId, banned) => api.put(`/admin/users/${userId}/status`, { banned }),
     getSettings: () => api.get('/admin/settings'),
     updateSettings: (data) => api.put('/admin/settings', data),
+    getHighRiskUsers: () => api.get('/admin/risk/users'),
     getStats: () => api.get('/admin/stats'),
     // Aviator admin
     createSchedule: (data) => api.post('/admin/aviator/schedule', data),

@@ -72,11 +72,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Rate Limiters
+const { apiLimiter, authLimiter, betLimiter, walletLimiter } = require('./middleware/rateLimiter');
+
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/api', apiLimiter); // Global API limit
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/games', gameRoutes);
-app.use('/api/wallet', walletRoutes);
+app.use('/api/games', gameRoutes); // Note: Bet rate limit should be applied inside game routes or where bets are placed
+app.use('/api/wallet', walletLimiter, walletRoutes);
 app.use('/api/reward', rewardRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 const statsRoutes = require('./routes/stats');
@@ -99,8 +103,11 @@ const chatRoutes = require('./routes/chat.routes');
 // The client calls /api/get-all-chat directly (no prefix like /api/chat)
 // So we mount it at /api/ directly or handle it inside the router
 // The client code says: `${config.api}/get-all-chat`. 
-// If config.api is http://localhost:5001/api, then it calls http://localhost:5001/api/get-all-chat
+// If config.api is https://winzone-final.onrender.com/api, then it calls https://winzone-final.onrender.com/api/get-all-chat
 app.use('/api', chatRoutes);
+
+const friendsRoutes = require('./routes/friends.routes');
+app.use('/api/friends', friendsRoutes);
 
 // Initialize Socket.IO
 const io = initSocket(server);

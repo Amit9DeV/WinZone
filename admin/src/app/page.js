@@ -14,7 +14,8 @@ import {
   Activity,
   DollarSign,
   Gamepad2,
-  PieChart
+  PieChart,
+  RefreshCcw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -60,19 +61,22 @@ export default function Dashboard() {
   };
 
   if (authLoading || !user) return null;
-  if (loading) return <div className="text-center py-20 text-gray-400">Loading Mission Control...</div>;
+  if (loading) return <div className="text-center py-20 text-[var(--text-muted)] animate-pulse">Initializing Mission Control...</div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 md:p-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Mission Control</h1>
-          <p className="text-gray-400 text-sm">Real-time financial overview</p>
+          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
+            MISSION <span className="text-[var(--primary)] neon-text-glow">CONTROL</span>
+          </h1>
+          <p className="text-[var(--text-muted)] text-sm mt-1">Real-time command center.</p>
         </div>
         <button
           onClick={fetchAnalytics}
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-3)] rounded-lg text-sm text-[var(--primary)] font-bold transition-all border border-[var(--primary)]/20 hover:shadow-[0_0_10px_var(--primary-glow)]"
         >
+          <RefreshCcw size={16} />
           Refresh Data
         </button>
       </div>
@@ -80,7 +84,7 @@ export default function Dashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Gross Gaming Revenue (All Time)"
+          title="Gross Gaming Revenue"
           value={`₹${stats.allTime.ggr.toLocaleString()}`}
           subtext={`Margin: ${(100 - stats.allTime.rtp).toFixed(2)}%`}
           icon={DollarSign}
@@ -118,11 +122,11 @@ export default function Dashboard() {
         {/* Profit Chart (2/3 width) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          className="lg:col-span-2 glass-panel rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-white flex gap-2 items-center">
-              <Activity className="text-green-500" size={20} />
+              <Activity className="text-[var(--success)]" size={20} />
               Profit & Loss (7 Days)
             </h3>
           </div>
@@ -132,27 +136,35 @@ export default function Dashboard() {
         {/* Top/Bottom Games or Quick Stats (1/3 width) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          className="glass-panel rounded-2xl p-6"
         >
           <h3 className="text-lg font-bold text-white mb-6 flex gap-2 items-center">
-            <PieChart className="text-blue-500" size={20} />
+            <PieChart className="text-[var(--secondary)]" size={20} />
             Platform Health
           </h3>
           <div className="space-y-6">
             <div>
-              <div className="flex justify-between text-sm mb-2 text-gray-400">
+              <div className="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
                 <span>Global RTP (Return to Player)</span>
-                <span className="text-white">{stats.allTime.rtp.toFixed(2)}%</span>
+                <span className="text-white font-bold">{stats.allTime.rtp.toFixed(2)}%</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-3 bg-[var(--surface-1)] rounded-full overflow-hidden border border-white/5">
                 <div
-                  className={`h-full ${stats.allTime.rtp > 100 ? 'bg-red-500' : 'bg-blue-500'}`}
+                  className={`h-full ${stats.allTime.rtp > 100 ? 'bg-[var(--danger)] shadow-[0_0_10px_var(--danger-glow)]' : 'bg-[var(--primary)] shadow-[0_0_10px_var(--primary-glow)]'}`}
                   style={{ width: `${Math.min(stats.allTime.rtp, 100)}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-[var(--text-muted)] mt-2 opacity-70">
                 Target RTP: 96% - 99%. Values {'>'} 100% mean the house is losing money.
               </p>
+            </div>
+
+            <div className="p-4 bg-[var(--surface-2)] rounded-xl border border-white/5">
+              <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">System Status</div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[var(--success)] shadow-[0_0_5px_var(--success-glow)] animate-pulse"></div>
+                <span className="text-sm font-bold text-white">Operational</span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -161,11 +173,11 @@ export default function Dashboard() {
       {/* Game Performance Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-        className="bg-gray-900 border border-gray-800 rounded-2xl p-6 overflow-hidden"
+        className="glass-panel rounded-2xl p-6 overflow-hidden"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-white flex gap-2 items-center">
-            <Gamepad2 className="text-purple-500" size={20} />
+            <Gamepad2 className="text-[var(--primary)]" size={20} />
             Game Performance
           </h3>
         </div>

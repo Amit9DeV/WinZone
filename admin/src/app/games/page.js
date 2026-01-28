@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { gameAPI, adminAPI } from '@/lib/api';
-import { Gamepad2, Power, Settings } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Gamepad2, Power, Settings, Save, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function GamesPage() {
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
-
-
 
     const [selectedGame, setSelectedGame] = useState(null);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -88,51 +86,57 @@ export default function GamesPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">Games Management</h1>
+        <div className="space-y-8 p-4 md:p-8">
+            <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <Gamepad2 className="text-[var(--primary)]" size={32} />
+                GAME <span className="text-[var(--primary)]">MANAGEMENT</span>
+            </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? (
-                    <div className="col-span-3 text-center py-12 text-gray-500">Loading games...</div>
+                    <div className="col-span-3 text-center py-20 text-[var(--text-muted)] animate-pulse">Loading games...</div>
                 ) : games.map((game, index) => (
                     <motion.div
                         key={game.gameId}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group"
+                        className="glass-panel rounded-2xl overflow-hidden group hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-shadow duration-300"
                     >
-                        <div className="h-32 bg-gray-900 relative flex items-center justify-center">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
-                            <Gamepad2 size={48} className="text-white/20 group-hover:text-white/40 transition-colors" />
-                            <div className={`absolute top-4 right-4 px-2 py-1 rounded-full text-xs font-medium ${game.enabled ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        <div className="h-40 bg-[var(--surface-3)] relative flex items-center justify-center overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/10 to-[var(--secondary)]/10" />
+                            <Gamepad2 size={64} className="text-white/10 group-hover:text-white/30 transition-all duration-500 scale-110 group-hover:scale-125 group-hover:rotate-12" />
+
+                            <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg ${game.enabled
+                                ? 'bg-[var(--success)] text-black shadow-[0_0_10px_var(--success-glow)]'
+                                : 'bg-[var(--danger)] text-white shadow-[0_0_10px_var(--danger-glow)]'
                                 }`}>
                                 {game.enabled ? 'Active' : 'Disabled'}
                             </div>
                         </div>
 
                         <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
+                            <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{game.name}</h3>
-                                    <p className="text-sm text-gray-500">ID: {game.gameId}</p>
+                                    <h3 className="text-xl font-bold text-white mb-1">{game.name}</h3>
+                                    <p className="text-xs font-mono text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-1 rounded w-fit">ID: {game.gameId}</p>
                                 </div>
                             </div>
 
-                            <div className="flex gap-2 mt-4">
+                            <div className="flex gap-3 mt-4">
                                 <button
                                     onClick={() => toggleGame(game.gameId, !game.enabled)}
-                                    className={`flex-1 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${game.enabled
-                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                        : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                    className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wide transition-all ${game.enabled
+                                        ? 'bg-[var(--surface-2)] text-[var(--danger)] border border-[var(--danger)]/30 hover:bg-[var(--danger)] hover:text-white hover:shadow-[0_0_15px_var(--danger-glow)]'
+                                        : 'bg-[var(--surface-2)] text-[var(--success)] border border-[var(--success)]/30 hover:bg-[var(--success)] hover:text-black hover:shadow-[0_0_15px_var(--success-glow)]'
                                         }`}
                                 >
-                                    <Power size={16} />
+                                    <Power size={18} strokeWidth={3} />
                                     {game.enabled ? 'Disable' : 'Enable'}
                                 </button>
                                 <button
                                     onClick={() => openSettings(game)}
-                                    className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors"
+                                    className="p-3 bg-[var(--surface-2)] text-white border border-white/10 rounded-xl hover:bg-[var(--primary)] hover:text-black hover:border-[var(--primary)] hover:shadow-[0_0_15px_var(--primary-glow)] transition-all"
                                     title="Game Settings"
                                 >
                                     <Settings size={20} />
@@ -144,79 +148,86 @@ export default function GamesPage() {
             </div>
 
             {/* Settings Modal */}
-            {showSettingsModal && selectedGame && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-gray-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-700"
-                    >
-                        <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-                            <h3 className="text-xl font-bold text-white">Settings: {selectedGame.name}</h3>
-                            <button onClick={() => setShowSettingsModal(false)} className="text-gray-400 hover:text-white text-2xl">
-                                ×
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSettingsSubmit} className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-1">Min Bet (₹)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0"
-                                        value={settingsForm.minBet}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, minBet: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-1">Max Bet (₹)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0"
-                                        value={settingsForm.maxBet}
-                                        onChange={(e) => setSettingsForm({ ...settingsForm, maxBet: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1">
-                                    Advanced Config (JSON Metadata)
-                                    <span className="text-xs text-gray-500 font-normal ml-2">multiplier, odds, etc.</span>
-                                </label>
-                                <textarea
-                                    rows="5"
-                                    value={settingsForm.metadata}
-                                    onChange={(e) => setSettingsForm({ ...settingsForm, metadata: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm text-white placeholder-gray-400"
-                                    placeholder='{"odds": 2.0, "special": true}'
-                                ></textarea>
-                            </div>
-
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowSettingsModal(false)}
-                                    className="px-4 py-2 text-gray-400 hover:bg-gray-700 rounded-lg"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                                >
-                                    Save Changes
+            <AnimatePresence>
+                {showSettingsModal && selectedGame && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="glass-panel w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
+                        >
+                            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[var(--surface-2)]">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Settings size={20} className="text-[var(--primary)]" />
+                                    Settings: <span className="text-[var(--primary)]">{selectedGame.name}</span>
+                                </h3>
+                                <button onClick={() => setShowSettingsModal(false)} className="text-[var(--text-muted)] hover:text-white transition-colors">
+                                    <X size={24} />
                                 </button>
                             </div>
-                        </form>
-                    </motion.div>
-                </div>
-            )}
+
+                            <form onSubmit={handleSettingsSubmit} className="p-6 space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Min Bet (₹)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={settingsForm.minBet}
+                                            onChange={(e) => setSettingsForm({ ...settingsForm, minBet: e.target.value })}
+                                            className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Max Bet (₹)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={settingsForm.maxBet}
+                                            onChange={(e) => setSettingsForm({ ...settingsForm, maxBet: e.target.value })}
+                                            className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">
+                                        Advanced Config (JSON Metadata)
+                                        <span className="text-xs text-[var(--primary)] font-normal ml-2 opacity-70">multiplier, odds, etc.</span>
+                                    </label>
+                                    <textarea
+                                        rows="5"
+                                        value={settingsForm.metadata}
+                                        onChange={(e) => setSettingsForm({ ...settingsForm, metadata: e.target.value })}
+                                        className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono text-sm"
+                                        placeholder='{"odds": 2.0, "special": true}'
+                                    ></textarea>
+                                </div>
+
+                                <div className="flex justify-end space-x-3 pt-4 border-t border-white/10">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSettingsModal(false)}
+                                        className="px-6 py-2.5 text-[var(--text-muted)] hover:text-white font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-2.5 bg-[var(--primary)] text-black rounded-xl hover:bg-[var(--primary)]/90 hover:shadow-[0_0_15px_var(--primary-glow)] font-bold transition-all flex items-center gap-2"
+                                    >
+                                        <Save size={18} />
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

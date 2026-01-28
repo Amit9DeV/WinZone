@@ -23,7 +23,7 @@ function initialize(io) {
         // Handle new messages
         socket.on('message:send', (data) => {
             try {
-                const { message, username } = data;
+                const { message, username, level, avatar } = data;
 
                 // Validation
                 if (!message || !username) return;
@@ -46,6 +46,8 @@ function initialize(io) {
                     id: `${userId}-${now}`,
                     userId,
                     username,
+                    level: level || 1,
+                    avatar,
                     message: message.trim(),
                     timestamp: now
                 };

@@ -21,6 +21,9 @@ export const metadata = {
   description: "Play Aviator, IPL Predictions and more",
 };
 
+import { ThemeProvider } from "@/context/ThemeContext";
+import { SoundProvider } from "@/context/SoundContext";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -28,12 +31,18 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ServerStatusProvider>
+
+
           <ServerWrapper>
             <LanguageProvider>
-              <AuthProvider>
-                {children}
-                <Toaster position="top-center" />
-              </AuthProvider>
+              <SoundProvider>
+                <ThemeProvider>
+                  <AuthProvider>
+                    {children}
+                    <Toaster position="top-center" />
+                  </AuthProvider>
+                </ThemeProvider>
+              </SoundProvider>
             </LanguageProvider>
           </ServerWrapper>
         </ServerStatusProvider>

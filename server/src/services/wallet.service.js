@@ -22,10 +22,6 @@ const walletService = {
 
   /**
    * Update user balance (internal use)
-   * @param {string} userId - User ID
-   * @param {number} amount - Amount to add (positive) or subtract (negative)
-   * @param {string} reason - Reason for balance change
-   * @returns {Object} Updated user
    */
   async updateBalance(userId, amount, reason = '') {
     const user = await User.findById(userId);
@@ -40,8 +36,6 @@ const walletService = {
 
     user.balance = newBalance;
     await user.save();
-
-
 
     // Emit real-time update
     this.emitBalanceUpdate(userId, newBalance);
@@ -67,26 +61,57 @@ const walletService = {
   emitBalanceUpdate(userId, balance) {
     try {
       const io = getIO();
-      io.to(`user:${userId}`).emit('user:balance', balance);
-      console.log(`📡 Emitted balance update for ${userId}: ${balance}`);
+      if (io) {
+        io.to(`user:${userId}`).emit('user:balance', balance);
+        console.log(`📡 Emitted balance update for ${userId}: ${balance}`);
+      }
     } catch (error) {
       console.error('Socket emit error:', error.message);
     }
   },
 
   /**
-
-  /**
-   * Request balance (user creates request, admin approves)
+   * Create Deposit Request
    */
-  async requestBalance(userId, amount) {
-    if (amount <= 0) {
-      throw new Error('Amount must be greater than 0');
-    }
+  async createDepositRequest(userId, amount, utr) {
+    if (amount <= 0) throw new Error('Amount must be greater than 0');
+    if (!utr) throw new Error('UTR number is required for verification');
+
+    // Check strict rate limit for deposits manually if needed? 
+    // Handled by route limiter.
 
     const request = await WalletRequest.create({
       userId,
       amount,
+      type: 'DEPOSIT',
+      utr,
+      status: 'PENDING',
+    });
+
+    return request;
+  },
+
+  /**
+   * Create Withdrawal Request
+   * IMMEDIATELY DEDUCTS BALANCE
+   */
+  async createWithdrawalRequest(userId, amount, upiId) {
+    if (amount <= 0) throw new Error('Amount must be greater than 0');
+    if (!upiId) throw new Error('UPI ID is required');
+
+    const user = await User.findById(userId);
+    if (user.balance < amount) {
+      throw new Error('Insufficient wallet balance');
+    }
+
+    // Deduct balance immediately
+    await this.updateBalance(userId, -amount, `Withdrawal Request to ${upiId}`);
+
+    const request = await WalletRequest.create({
+      userId,
+      amount,
+      type: 'WITHDRAWAL',
+      upiId,
       status: 'PENDING',
     });
 
@@ -106,12 +131,19 @@ const walletService = {
       throw new Error('Request already processed');
     }
 
-    // Update balance
-    await this.updateBalance(
-      request.userId,
-      request.amount,
-      `Wallet request approved: ${request.amount}`
-    );
+    // Handle Logic based on Type
+    if (request.type === 'DEPOSIT') {
+      // Add balance for Approved Deposit
+      await this.updateBalance(
+        request.userId,
+        request.amount,
+        `Deposit Approved (UTR: ${request.utr})`
+      );
+    } else {
+      // For Withdrawal, money was already deducted. 
+      // Just mark as approved (Admin has sent the money manually via UPI)
+      // Optionally, we could log a 'Withdrawal Processed' activity.
+    }
 
     // Update request
     request.status = 'APPROVED';
@@ -134,6 +166,16 @@ const walletService = {
 
     if (request.status !== 'PENDING') {
       throw new Error('Request already processed');
+    }
+
+    // Handle Logic based on Type
+    if (request.type === 'WITHDRAWAL') {
+      // Refund the money for Rejected Withdrawal
+      await this.updateBalance(
+        request.userId,
+        request.amount,
+        `Withdrawal Refund (Rejected)`
+      );
     }
 
     request.status = 'REJECTED';
@@ -175,5 +217,3 @@ const walletService = {
 };
 
 module.exports = walletService;
-
-

@@ -2,12 +2,12 @@ const style: any = {
   position: "fixed",
   bottom: "20px",
   left: "20px",
-  width: 200,
+  width: 100,
   borderRadius: "12px",
   color: "white",
   textDecoration: "none",
   backgroundColor: "#1682FB",
-  padding: "20px",
+  padding: "10px",
   textAlign: "center",
   fontWeight: "bold",
   zIndex: 10000000
@@ -15,8 +15,8 @@ const style: any = {
 
 export const ContactMeTelegram = () => {
   return (
-    <a style={{ ...style }} href="" target="__blink">
-      Contact
+    <a style={{ ...style }} href="https://github.com/Amit9DeV/WinZone" target="__blink">
+      Amit
     </a>
   );
 };

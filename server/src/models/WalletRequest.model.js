@@ -16,6 +16,22 @@ const walletRequestSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  type: {
+    type: String,
+    enum: ['DEPOSIT', 'WITHDRAWAL'],
+    required: true,
+    default: 'DEPOSIT' // For backward compatibility
+  },
+  // For Deposits
+  utr: {
+    type: String,
+    trim: true,
+  },
+  // For Withdrawals
+  upiId: {
+    type: String,
+    trim: true,
+  },
   status: {
     type: String,
     enum: ['PENDING', 'APPROVED', 'REJECTED'],

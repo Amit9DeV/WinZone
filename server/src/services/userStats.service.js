@@ -21,6 +21,7 @@ const userStatsService = {
     user.totalLosses = user.totalBets - user.totalWins;
     user.winPercentage = (user.totalWins / user.totalBets) * 100;
     user.totalWagered = (user.totalWagered || 0) + amount;
+    user.totalWon = (user.totalWon || 0) + payout;
 
     if (payout > (user.biggestWin || 0)) {
       user.biggestWin = payout;
@@ -91,6 +92,7 @@ const userStatsService = {
    * Revert stats when a loss is converted to a win (late cashout)
    */
   async revertLoss(userId, gameId, amount) {
+    // No changes needed for revertLoss as it reverts a LOSS (payout 0), so totalWon remains unchanged.
     // Revert overall user stats
     const user = await User.findById(userId);
     if (!user) return;
@@ -126,6 +128,7 @@ const userStatsService = {
       overall: {
         totalBets: user.totalBets,
         totalWins: user.totalWins,
+        totalWon: user.totalWon,
         totalLosses: user.totalLosses,
         winPercentage: user.winPercentage,
         balance: user.balance,

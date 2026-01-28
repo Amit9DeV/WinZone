@@ -47,6 +47,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  totalWon: {
+    type: Number,
+    default: 0,
+  },
   totalLosses: {
     type: Number,
     default: 0,
@@ -94,6 +98,13 @@ const userSchema = new mongoose.Schema({
   referralCount: {
     type: Number,
     default: 0
+  },
+  // Risk & Fraud Detection
+  riskProfile: {
+    riskScore: { type: Number, default: 0, min: 0, max: 100 },
+    flags: [{ type: String }], // e.g. 'MULTI_IP', 'BOT_RATE', 'WALLET_SPIKE'
+    lastPlayedIp: { type: String },
+    suspiciousActivityCount: { type: Number, default: 0 }
   }
 }, {
   timestamps: true,

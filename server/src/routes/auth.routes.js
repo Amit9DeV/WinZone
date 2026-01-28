@@ -159,6 +159,7 @@ router.post('/login', async (req, res) => {
           email: user.email,
           balance: user.balance,
           role: user.role,
+          avatar: user.avatar,
         },
         token,
       },
@@ -221,6 +222,7 @@ router.get('/verify', async (req, res) => {
           email: user.email,
           balance: user.balance,
           role: user.role,
+          avatar: user.avatar,
         },
       },
     });

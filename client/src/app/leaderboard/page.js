@@ -78,6 +78,16 @@ export default function LeaderboardPage() {
                             </button>
                         );
                     })}
+                    <button
+                        onClick={() => setActiveTab('biggest-win')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium whitespace-nowrap ${activeTab === 'biggest-win'
+                            ? 'bg-yellow-500 text-black'
+                            : 'bg-surface-2 text-gray-400 hover:bg-surface-3'
+                            }`}
+                    >
+                        <Trophy size={18} />
+                        Biggest Wins
+                    </button>
                 </div>
 
                 {/* Leaderboard Table */}
@@ -107,14 +117,27 @@ export default function LeaderboardPage() {
                                                 Player
                                             </th>
                                             <th className="px-4 md:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                Profit
+                                                {activeTab === 'biggest-win' ? 'Payout' : 'Profit'}
                                             </th>
-                                            <th className="px-4 md:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                Bets
-                                            </th>
-                                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                Win Rate
-                                            </th>
+                                            {activeTab === 'biggest-win' ? (
+                                                <>
+                                                    <th className="px-4 md:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                        Game
+                                                    </th>
+                                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                        Multiplier
+                                                    </th>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <th className="px-4 md:px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                        Bets
+                                                    </th>
+                                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                        Win Rate
+                                                    </th>
+                                                </>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
@@ -150,20 +173,33 @@ export default function LeaderboardPage() {
                                                         <div className="flex items-center justify-end gap-1">
                                                             <TrendingUp size={16} className="text-green-500" />
                                                             <span className="font-bold text-green-500">
-                                                                ₹{player.totalProfit?.toLocaleString() || 0}
+                                                                ₹{(activeTab === 'biggest-win' ? player.payout : player.totalProfit)?.toLocaleString() || 0}
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 md:px-6 py-4 text-right">
-                                                        <span className="text-gray-400 font-mono">
-                                                            {player.totalBets || 0}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <span className="text-gray-400">
-                                                            {player.winRate ? `${player.winRate.toFixed(1)}%` : '0%'}
-                                                        </span>
-                                                    </td>
+                                                    {activeTab === 'biggest-win' ? (
+                                                        <>
+                                                            <td className="px-4 md:px-6 py-4 text-right text-gray-400 capitalize">
+                                                                {player.gameId || 'Aviator'}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right font-mono text-yellow-500">
+                                                                {player.multiplier ? `${player.multiplier}x` : '-'}
+                                                            </td>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <td className="px-4 md:px-6 py-4 text-right">
+                                                                <span className="text-gray-400 font-mono">
+                                                                    {player.totalBets || 0}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <span className="text-gray-400">
+                                                                    {player.winRate ? `${player.winRate.toFixed(1)}%` : '0%'}
+                                                                </span>
+                                                            </td>
+                                                        </>
+                                                    )}
                                                 </tr>
                                             );
                                         })}
@@ -198,16 +234,25 @@ export default function LeaderboardPage() {
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-4 text-xs text-gray-400">
-                                                    <span>{player.totalBets} Bets</span>
-                                                    <span>{player.winRate?.toFixed(0)}% Win Rate</span>
+                                                    {activeTab === 'biggest-win' ? (
+                                                        <span>{player.multiplier}x on {player.gameId || 'Aviator'}</span>
+                                                    ) : (
+                                                        <>
+                                                            <span>{player.totalBets} Bets</span>
+                                                            <span>{player.winRate?.toFixed(0)}% Win Rate</span>
+                                                        </>
+                                                    )}
+
                                                 </div>
                                             </div>
 
                                             <div className="text-right">
                                                 <div className="font-bold text-green-500 text-sm sm:text-base">
-                                                    ₹{player.totalProfit?.toLocaleString()}
+                                                    ₹{(activeTab === 'biggest-win' ? player.payout : player.totalProfit)?.toLocaleString()}
                                                 </div>
-                                                <span className="text-[10px] text-gray-500 uppercase">Profit</span>
+                                                <span className="text-[10px] text-gray-500 uppercase">
+                                                    {activeTab === 'biggest-win' ? 'Payout' : 'Profit'}
+                                                </span>
                                             </div>
                                         </div>
                                     );

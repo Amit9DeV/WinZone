@@ -33,6 +33,7 @@ export default function AviatorPage() {
       // Redirect to Aviator with auth token
       // Aviator runs on port 3001
       const aviatorUrl = 'https://win-zone-aviator.vercel.app/';
+      // const aviatorUrl = 'http://localhost:3001';
       const url = `${aviatorUrl}?cert=${token}&token=${token}&userId=${userId}`;
 
       // Redirect after a short delay to show loading

@@ -7,6 +7,10 @@ const leaderboardService = {
      */
     async updateLeaderboard(period) {
         try {
+            if (period === 'biggest-win') {
+                return this.updateBiggestWinLeaderboard();
+            }
+
             const now = new Date();
             let startDate;
 
@@ -90,19 +94,6 @@ const leaderboardService = {
                 }
             ]);
 
-            // Save to DB
-            // We upsert the "current" leaderboard for today/this week/this month
-            // Or strictly create new snapshots.
-            // For a live dashboard, usually we want the "Latest" one.
-
-            // Strategy: Upsert based on the period and "start of period" date?
-            // Or simpler: Just keep ONE document for 'current' daily, and maybe archive others?
-            // Let's just create a new one for "now" and we can query the latest.
-
-            // actually, simpler: Find ONE document for this period and update it.
-            // If historical is needed, we'd add 'date' query.
-
-            // Let's just update "Latest"
             await Leaderboard.findOneAndUpdate(
                 { period },
                 {
@@ -117,6 +108,64 @@ const leaderboardService = {
 
         } catch (error) {
             console.error(`Failed to update ${period} leaderboard:`, error);
+        }
+    },
+
+    /**
+     * Update Biggest Win Leaderboard (All Time)
+     */
+    async updateBiggestWinLeaderboard() {
+        try {
+            const entries = await Bet.aggregate([
+                {
+                    $match: {
+                        result: 'WON',
+                        payout: { $gt: 0 }
+                    }
+                },
+                {
+                    $sort: { payout: -1 } // Sort by Payout Amount
+                },
+                {
+                    $limit: 20
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'userInfo'
+                    }
+                },
+                {
+                    $unwind: '$userInfo'
+                },
+                {
+                    $project: {
+                        userId: '$userId',
+                        username: '$userInfo.name',
+                        gameId: '$gameId',
+                        multiplier: '$multiplier',
+                        betAmount: '$amount',
+                        payout: '$payout',
+                        totalProfit: '$payout', // Align with schema
+                        // Add dummy values for required schema fields if needed, or make them optional
+                    }
+                }
+            ]);
+
+            await Leaderboard.findOneAndUpdate(
+                { period: 'biggest-win' },
+                {
+                    period: 'biggest-win',
+                    entries,
+                    updatedAt: new Date()
+                },
+                { upsert: true, new: true }
+            );
+            console.log(`✅ Biggest Win Leaderboard updated`);
+        } catch (error) {
+            console.error("Failed to update biggest-win leaderboard", error);
         }
     },
 

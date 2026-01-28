@@ -126,6 +126,50 @@ router.get('/get-year-history', (req, res) => getTopBets(req, res, 'year'));
 router.use(authenticate);
 
 /**
+ * Update user profile
+ * PUT /api/users/profile
+ */
+router.put('/profile', async (req, res) => {
+  try {
+    const { name, avatar } = req.body;
+    const User = require('../models/User.model');
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (name) user.name = name;
+    if (avatar) user.avatar = avatar;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          balance: user.balance,
+          role: user.role,
+          avatar: user.avatar,
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
  * Get user profile
  * GET /api/users/profile
  */

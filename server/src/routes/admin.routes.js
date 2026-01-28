@@ -360,6 +360,24 @@ router.get('/risk/dashboard', async (req, res) => {
   }
 });
 
+const fraudService = require('../services/fraudService');
+
+/**
+ * Get High Risk Users
+ * GET /api/admin/risk/users
+ */
+router.get('/risk/users', async (req, res) => {
+  try {
+    const riskUsers = await fraudService.getHighRiskUsers();
+    res.json({
+      success: true,
+      data: riskUsers
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
 
 

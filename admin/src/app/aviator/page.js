@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminAPI } from '@/lib/api';
-import { Plane, Calendar, Clock, Trash2, Plus, AlertTriangle } from 'lucide-react';
+import { Plane, Calendar, Clock, Trash2, Plus, AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -72,14 +72,23 @@ export default function AviatorPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 p-4 md:p-8">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900">Aviator Management</h1>
+                <div>
+                    <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                        <Plane className="text-[var(--danger)]" size={32} />
+                        AVIATOR <span className="text-[var(--danger)]">CONTROL</span>
+                    </h1>
+                    <p className="text-[var(--text-muted)] mt-1">Manage flight schedules and crash points.</p>
+                </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg ${showForm
+                        ? 'bg-[var(--surface-3)] text-white hover:bg-[var(--surface-2)]'
+                        : 'bg-[var(--danger)] text-white hover:bg-[var(--danger)]/90 hover:shadow-[0_0_15px_var(--danger-glow)]'
+                        }`}
                 >
-                    {showForm ? <AlertTriangle size={20} /> : <Plus size={20} />}
+                    {showForm ? <X size={20} /> : <Plus size={20} />}
                     <span>{showForm ? 'Cancel' : 'New Schedule'}</span>
                 </button>
             </div>
@@ -87,48 +96,51 @@ export default function AviatorPage() {
             <AnimatePresence>
                 {showForm && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, height: 0, y: -20 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -20 }}
                         className="overflow-hidden"
                     >
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-                            <h3 className="text-lg font-semibold mb-4">Create Flight Schedule</h3>
-                            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="glass-panel p-6 rounded-2xl mb-8 border border-[var(--danger)]/30">
+                            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                <AlertTriangle className="text-[var(--danger)]" size={20} />
+                                Create Flight Schedule
+                            </h3>
+                            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Date</label>
                                     <input
                                         type="date"
                                         value={formData.date}
                                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--danger)] focus:ring-1 focus:ring-[var(--danger)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Times (comma separated)</label>
+                                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Times (comma separated)</label>
                                     <input
                                         type="text"
                                         placeholder="10:00, 11:30, 14:00"
                                         value={formData.times}
                                         onChange={(e) => setFormData({ ...formData, times: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--danger)] focus:ring-1 focus:ring-[var(--danger)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Crash Multiplier</label>
+                                    <label className="block text-sm font-bold text-[var(--text-muted)] mb-2">Crash Multiplier</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         placeholder="2.50"
                                         value={formData.crashAt}
                                         onChange={(e) => setFormData({ ...formData, crashAt: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-[var(--surface-1)] border border-white/10 rounded-xl focus:border-[var(--danger)] focus:ring-1 focus:ring-[var(--danger)] focus:outline-none text-white placeholder-gray-600 transition-all font-mono"
                                     />
                                 </div>
                                 <div className="md:col-span-3 flex justify-end">
                                     <button
                                         type="submit"
-                                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                        className="px-8 py-3 bg-[var(--danger)] text-white rounded-xl hover:bg-[var(--danger)]/90 hover:shadow-[0_0_20px_var(--danger-glow)] font-bold transition-all uppercase tracking-wider"
                                     >
                                         Save Schedule
                                     </button>
@@ -141,11 +153,12 @@ export default function AviatorPage() {
 
             <div className="grid gap-4">
                 {loading ? (
-                    <div className="text-center py-12 text-gray-500">Loading schedules...</div>
+                    <div className="text-center py-20 text-[var(--text-muted)] animate-pulse">Scanning flight logs...</div>
                 ) : schedules.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-gray-100">
-                        <Plane className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                        <p>No active schedules</p>
+                    <div className="text-center py-20 bg-[var(--surface-1)] rounded-2xl border border-white/5">
+                        <Plane className="mx-auto h-16 w-16 text-[var(--text-muted)] mb-4 opacity-50" />
+                        <h3 className="text-white font-bold text-lg">No active schedules</h3>
+                        <p className="text-[var(--text-muted)]">No flights scheduled. Create one to start.</p>
                     </div>
                 ) : (
                     schedules.map((schedule, index) => (
@@ -154,36 +167,37 @@ export default function AviatorPage() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+                            className="glass-panel p-5 rounded-xl flex items-center justify-between group hover:border-[var(--danger)]/30 transition-all"
                         >
-                            <div className="flex items-center space-x-6">
-                                <div className="flex items-center space-x-2 text-gray-600">
-                                    <Calendar size={18} />
-                                    <span className="font-medium">{schedule.date}</span>
+                            <div className="flex items-center space-x-8">
+                                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
+                                    <Calendar size={18} className="text-[var(--danger)]" />
+                                    <span className="font-mono font-bold text-white">{schedule.date}</span>
                                 </div>
-                                <div className="flex items-center space-x-2 text-gray-600">
-                                    <Clock size={18} />
-                                    <span className="font-medium">{schedule.time}</span>
+                                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
+                                    <Clock size={18} className="text-[var(--danger)]" />
+                                    <span className="font-mono font-bold text-white">{schedule.time}</span>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-sm text-gray-500">Crash at:</span>
-                                    <span className="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-xs font-bold uppercase text-[var(--text-muted)] tracking-wider">Crash At</span>
+                                    <span className="font-black text-[var(--danger)] bg-[var(--danger)]/10 px-3 py-1 rounded-lg border border-[var(--danger)]/20 shadow-[0_0_10px_var(--danger-glow)]">
                                         {schedule.crashAt}x
                                     </span>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-4">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${schedule.used
-                                        ? 'bg-gray-100 text-gray-600'
-                                        : 'bg-green-100 text-green-700'
+                                <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${schedule.used
+                                    ? 'bg-[var(--surface-3)] text-[var(--text-muted)]'
+                                    : 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20'
                                     }`}>
                                     {schedule.used ? 'Completed' : 'Scheduled'}
                                 </span>
                                 {!schedule.used && (
                                     <button
                                         onClick={() => deleteSchedule(schedule._id)}
-                                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-2 text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg transition-all"
+                                        title="Delete Schedule"
                                     >
                                         <Trash2 size={18} />
                                     </button>

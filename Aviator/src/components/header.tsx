@@ -36,12 +36,12 @@ export default function Header() {
             <div className="help-msg">How to play ?</div>
           </button>
           <div className="d-flex">
-            <div className="user-info" style={{ display: 'flex', alignItems: 'center', marginRight: '15px', color: 'white', fontWeight: 'bold' }}>
+            <div className="user-info" style={{ display: 'flex', alignItems: 'center', marginLeft: '10px', color: 'yellow', fontWeight: 'bold', fontSize: '16px' }}>
               <span className="user-name">{state.userInfo.userName || "Player"}</span>
             </div>
             <div className="balance">
-              <span className="amount">{Number(state.userInfo.balance).toFixed(2)} </span>
-              <span className="currency">&nbsp;INR</span>
+              <span className="amount"><span style={{ color: 'white' }}>₹</span> {Number(state.userInfo.balance).toFixed(2)} </span>
+
             </div>
           </div>
         </div>

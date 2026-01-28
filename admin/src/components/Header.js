@@ -7,32 +7,32 @@ export default function Header() {
     const { user } = useAuth();
 
     return (
-        <header className="bg-gray-800 border-b border-gray-700 h-16 flex items-center justify-between px-6 md:px-8 pl-14 md:pl-8 sticky top-0 z-30">
+        <header className="bg-[var(--surface-1)]/90 backdrop-blur-md border-b border-white/5 h-16 flex items-center justify-between px-4 md:px-8 pl-16 md:pl-8 sticky top-0 z-30 shadow-lg">
             {/* Search */}
-            <div className="hidden sm:flex items-center bg-gray-700 rounded-lg px-3 py-2 w-64 md:w-96">
-                <Search size={18} className="text-gray-400 mr-2" />
+            <div className="hidden sm:flex items-center bg-[var(--surface-2)] border border-white/5 rounded-xl px-4 py-2 w-64 md:w-96 focus-within:ring-1 focus-within:ring-[var(--primary)] focus-within:border-[var(--primary)] transition-all">
+                <Search size={18} className="text-[var(--text-muted)] mr-3" />
                 <input
                     type="text"
-                    placeholder="Search..."
-                    className="bg-transparent border-none focus:outline-none text-sm w-full text-white placeholder-gray-400"
+                    placeholder="Search ecosystem..."
+                    className="bg-transparent border-none focus:outline-none text-sm w-full text-white placeholder-gray-500"
                 />
             </div>
 
             {/* Right Side */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4 md:space-x-6">
                 {/* Notifications */}
-                <button className="relative text-gray-500 hover:text-gray-700 transition-colors">
+                <button className="relative text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors p-2 hover:bg-[var(--primary)]/10 rounded-lg">
                     <Bell size={20} />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--danger)] rounded-full shadow-[0_0_5px_var(--danger-glow)]"></span>
                 </button>
 
                 {/* User Profile */}
-                <div className="flex items-center space-x-3 border-l pl-6 border-gray-700">
+                <div className="flex items-center space-x-3 border-l pl-4 md:pl-6 border-white/10">
                     <div className="text-right hidden md:block">
-                        <div className="text-sm font-semibold text-white">{user?.name || 'Admin'}</div>
-                        <div className="text-xs text-gray-400">Super Admin</div>
+                        <div className="text-sm font-bold text-white">{user?.name || 'Admin'}</div>
+                        <div className="text-[10px] text-[var(--primary)] font-mono uppercase tracking-wider">Super Admin</div>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-black font-black shadow-[0_0_10px_var(--primary-glow)] border border-white/20">
                         {user?.name?.[0] || 'A'}
                     </div>
                 </div>

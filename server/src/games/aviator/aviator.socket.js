@@ -8,6 +8,7 @@ const GameRound = require('../../models/GameRound.model');
 const walletService = require('../../services/wallet.service');
 const userStatsService = require('../../services/userStats.service');
 const activityService = require('../../services/activity.service');
+const fraudService = require('../../services/fraudService'); // Fraud Detection
 
 // Import CONFIG for time calculations
 const CONFIG = {
@@ -102,10 +103,25 @@ function initializeAviatorSockets(io, gameEngine) {
         }
 
 
+        const Game = require('../../models/Game.model');
+
         const { betAmount, target, type = 'f', auto = false } = data;
+
+        // Fetch Game Config (should cache this in production)
+        const gameConfig = await Game.findOne({ gameId: 'aviator' });
+        const minBet = gameConfig?.minBet || 1;
+        const maxBet = gameConfig?.maxBet || 10000;
 
         if (!betAmount || betAmount <= 0) {
           return socket.emit('error', { message: 'Invalid bet amount', type });
+        }
+
+        if (betAmount < minBet) {
+          return socket.emit('error', { message: `Minimum bet is ₹${minBet}`, type });
+        }
+
+        if (betAmount > maxBet) {
+          return socket.emit('error', { message: `Maximum bet is ₹${maxBet}`, type });
         }
 
         // Check if game is in betting phase
@@ -211,6 +227,13 @@ function initializeAviatorSockets(io, gameEngine) {
           });
         }
 
+        // RISK CHECK: Analyze bet
+        fraudService.analyzeBet(
+          currentUserId,
+          { amount: betAmount },
+          socket.handshake.address
+        ).catch(e => console.error('Fraud Check Error:', e));
+
       } catch (error) {
         console.error('Bet placement error:', error);
         socket.emit('error', { message: error.message, type: data?.type || 'f' });
@@ -309,6 +332,14 @@ function initializeAviatorSockets(io, gameEngine) {
 
         // Update stats
         await userStatsService.recordWin(currentUserId, 'aviator', bet.amount, payout);
+
+        // RISK CHECK: Trigger analysis for big wins
+        // RISK CHECK: Trigger analysis for big wins
+        if (endTarget > 5 || payout > 5000) {
+          // Run asynchronously
+          fraudService.analyzeResult(currentUserId, payout, bet.amount)
+            .catch(e => console.error('Fraud Check Error:', e));
+        }
 
         // Record activity
         await activityService.createActivity({

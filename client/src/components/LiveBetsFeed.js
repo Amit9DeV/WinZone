@@ -1,13 +1,13 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Trophy } from 'lucide-react';
+import { Trophy, Gamepad2, Users, X } from 'lucide-react'; // Changed icons
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
 export default function LiveBetsFeed() {
     const [bets, setBets] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false); // Default closed on mobile
 
     useEffect(() => {
         const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://winzone-final.onrender.com';
@@ -34,30 +34,35 @@ export default function LiveBetsFeed() {
 
     return (
         <>
-            {/* Floating Toggle Button */}
+            {/* Desktop: Always visible sidebar widget or integration? 
+                For now, keeping the floating toggle for mobile/desktop consistency 
+                but giving it a cleaner look. 
+            */}
+
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-30"
+                className="fixed bottom-24 right-4 z-40 bg-surface-2 hover:bg-surface-3 text-white p-3 rounded-full shadow-xl border border-white/10 transition-all hover:scale-105 group"
             >
-                <Trophy size={20} className="text-white" />
-                {bets.length > 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white">
-                        {Math.min(bets.length, 99)}
-                    </div>
-                )}
+                <div className="relative">
+                    <Trophy size={24} className="group-hover:text-primary transition-colors" />
+                    {bets.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-primary text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                            {Math.min(bets.length, 99)}
+                        </span>
+                    )}
+                </div>
             </button>
 
-            {/* Slide-out Panel */}
             <AnimatePresence>
                 {isOpen && (
                     <>
-                        {/* Overlay */}
+                        {/* Overlay for mobile */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                            className="fixed inset-0 bg-black/50 z-40 md:hidden"
                         />
 
                         {/* Panel */}
@@ -66,73 +71,53 @@ export default function LiveBetsFeed() {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25 }}
-                            className="fixed right-0 top-0 h-full w-screen md:w-80 bg-surface-1 border-l border-white/10 z-[60] flex flex-col shadow-2xl"
+                            className="fixed right-0 top-0 h-full w-full md:w-[400px] bg-surface-1 border-l border-white/10 z-50 flex flex-col shadow-2xl"
                         >
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Trophy size={20} className="text-white" />
-                                    <h3 className="font-bold text-white">Live Bets</h3>
+                            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-surface-2">
+                                <div className="flex items-center gap-2 font-bold text-white">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    <h3>Live Bets</h3>
                                 </div>
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-white/70 hover:text-white transition-colors"
-                                >
-                                    ✕
+                                <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">
+                                    <X size={20} />
                                 </button>
                             </div>
 
-                            {/* Bets List */}
-                            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                                {bets.length === 0 ? (
-                                    <div className="text-center text-gray-500 py-8">
-                                        <Trophy size={48} className="mx-auto mb-2 opacity-20" />
-                                        <p className="text-sm">Waiting for bets...</p>
-                                    </div>
-                                ) : (
-                                    bets.map((bet, i) => (
-                                        <motion.div
-                                            key={bet.id || i}
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            className={`p-3 rounded-lg border ${bet.won
-                                                ? 'bg-green-500/10 border-green-500/30'
-                                                : 'bg-red-500/10 border-red-500/30'
-                                                }`}
-                                        >
-                                            <div className="flex items-start justify-between mb-1">
-                                                <div className="flex items-center gap-2">
-                                                    {bet.won ? (
-                                                        <TrendingUp size={16} className="text-green-500" />
-                                                    ) : (
-                                                        <TrendingDown size={16} className="text-red-500" />
-                                                    )}
-                                                    <span className="font-bold text-white text-sm">
-                                                        {bet.username || 'Player'}
-                                                    </span>
-                                                </div>
-                                                <span className="text-[10px] text-gray-500 uppercase font-bold">
-                                                    {bet.game}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs text-gray-400">
-                                                    Bet: ₹{bet.amount}
-                                                </span>
-                                                {bet.won && (
-                                                    <span className="text-xs font-bold text-green-500">
-                                                        +₹{bet.payout?.toFixed(2)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {bet.multiplier && (
-                                                <div className="mt-1 text-xs text-gray-500">
-                                                    {bet.multiplier}x multiplier
-                                                </div>
+                            {/* Table Header */}
+                            <div className="grid grid-cols-4 gap-2 px-4 py-2 text-[10px] uppercase font-bold text-gray-500 border-b border-white/5 bg-surface-2/50">
+                                <div>Game</div>
+                                <div>User</div>
+                                <div className="text-right">Bet</div>
+                                <div className="text-right">Payout</div>
+                            </div>
+
+                            {/* Rows */}
+                            <div className="flex-1 overflow-y-auto">
+                                {bets.map((bet, i) => (
+                                    <div
+                                        key={bet.id || i}
+                                        className={`grid grid-cols-4 gap-2 px-4 py-3 border-b border-white/5 text-sm items-center hover:bg-white/5 transition-colors ${bet.won ? 'bg-green-500/5' : ''}`}
+                                    >
+                                        <div className="flex items-center gap-2 text-gray-300">
+                                            <Gamepad2 size={14} />
+                                            <span className="truncate max-w-[60px]">{bet.game}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-white font-medium">
+                                            <Users size={12} className="text-gray-500" />
+                                            <span className="truncate max-w-[80px]">{bet.username}</span>
+                                        </div>
+                                        <div className="text-right text-gray-300">
+                                            ₹{bet.amount}
+                                        </div>
+                                        <div className={`text-right font-bold ${bet.won ? 'text-green-400' : 'text-gray-500'}`}>
+                                            {bet.won ? `+₹${bet.payout?.toFixed(0)}` : '0.00'}
+                                            {bet.won && bet.multiplier && (
+                                                <div className="text-[10px] text-green-500/70">{bet.multiplier}x</div>
                                             )}
-                                        </motion.div>
-                                    ))
-                                )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </motion.div>
                     </>

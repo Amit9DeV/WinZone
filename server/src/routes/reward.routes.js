@@ -1,28 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth.middleware');
 const DailyReward = require('../models/DailyReward.model');
-const walletService = require('../services/wallet.service');
+const { authenticate } = require('../middleware/auth.middleware');
+const User = require('../models/User.model');
 
-/**
- * GET /api/rewards/status
- * Check daily reward status for current user
- */
+// Check Reward Status
 router.get('/status', authenticate, async (req, res) => {
     try {
-        let reward = await DailyReward.findOne({ userId: req.user._id });
+        const userId = req.user.id;
+
+        let reward = await DailyReward.findOne({ userId });
 
         if (!reward) {
-            reward = new DailyReward({ userId: req.user._id });
+            reward = new DailyReward({ userId });
             await reward.save();
         }
 
-        // Check if streak is still valid
-        reward.checkStreak();
-        await reward.save();
+        // Check streak status (reset if missed)
+        const isStreakValid = reward.checkStreak();
+        if (!isStreakValid) {
+            await reward.save(); // Save reset state
+        }
 
         const canClaim = reward.canClaim();
-        const rewardAmount = canClaim ? reward.getRewardAmount() : 0;
+        const rewardAmount = reward.getRewardAmount();
+
+        // Calculate next reward day (1-7)
+        const nextRewardDay = (reward.currentStreak % 7) + 1;
 
         res.json({
             success: true,
@@ -30,47 +34,35 @@ router.get('/status', authenticate, async (req, res) => {
                 canClaim,
                 currentStreak: reward.currentStreak,
                 rewardAmount,
-                nextRewardDay: (reward.currentStreak % 7) + 1,
-                totalClaimed: reward.totalClaimed,
+                nextRewardDay,
                 lastClaimDate: reward.lastClaimDate
             }
         });
     } catch (error) {
-        console.error('Daily reward status error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to get reward status'
-        });
+        console.error('Reward Status Error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-/**
- * POST /api/rewards/claim
- * Claim daily reward
- */
+// Claim Reward
 router.post('/claim', authenticate, async (req, res) => {
     try {
-        let reward = await DailyReward.findOne({ userId: req.user._id });
+        const userId = req.user.id;
 
+        const reward = await DailyReward.findOne({ userId });
         if (!reward) {
-            reward = new DailyReward({ userId: req.user._id });
+            return res.status(404).json({ message: 'Reward profile not found.' });
         }
 
-        // Validate
-        reward.checkStreak();
-
         if (!reward.canClaim()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Already claimed today. Come back tomorrow!'
-            });
+            return res.status(400).json({ message: 'Reward already claimed for today.' });
         }
 
         const amount = reward.getRewardAmount();
 
-        // Update reward
-        reward.currentStreak += 1;
+        // Update Reward Doc
         reward.lastClaimDate = new Date();
+        reward.currentStreak += 1;
         reward.totalClaimed += amount;
         reward.claimHistory.push({
             day: reward.currentStreak,
@@ -79,26 +71,21 @@ router.post('/claim', authenticate, async (req, res) => {
         });
         await reward.save();
 
-        // Credit user balance
-        await walletService.updateBalance(req.user._id, amount, 'Daily Reward');
-        const newBalance = await walletService.getBalance(req.user._id);
+        // Update User Balance
+        const user = await User.findById(userId);
+        user.balance += amount;
+        await user.save();
 
         res.json({
             success: true,
-            data: {
-                amount,
-                newBalance,
-                currentStreak: reward.currentStreak,
-                nextRewardDay: (reward.currentStreak % 7) + 1
-            },
-            message: `Reward claimed! +₹${amount}`
+            message: `Claimed ₹${amount}`,
+            newBalance: user.balance,
+            currentStreak: reward.currentStreak
         });
+
     } catch (error) {
-        console.error('Daily reward claim error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to claim reward'
-        });
+        console.error('Claim Reward Error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 

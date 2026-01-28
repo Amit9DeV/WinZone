@@ -31,37 +31,61 @@ router.get('/balance', async (req, res) => {
 });
 
 /**
- * Request balance (deposit)
- * POST /api/wallet/request
+ * Deposit Request
+ * POST /api/wallet/deposit
  */
-router.post('/request', async (req, res) => {
+router.post('/deposit', async (req, res) => {
   try {
-    const { amount } = req.body;
-    
+    const { amount, utr } = req.body;
+
     if (!amount || amount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid amount is required',
-      });
+      return res.status(400).json({ success: false, message: 'Valid amount is required' });
     }
-    
-    const request = await walletService.requestBalance(req.userId, amount);
-    
+    if (!utr) {
+      return res.status(400).json({ success: false, message: 'UTR number is required' });
+    }
+
+    const request = await walletService.createDepositRequest(req.userId, amount, utr);
+
     res.json({
       success: true,
       data: request,
-      message: 'Balance request submitted. Waiting for admin approval.',
+      message: 'Deposit request submitted. Verification pending.',
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * Get user's wallet requests
+ * Withdrawal Request
+ * POST /api/wallet/withdraw
+ */
+router.post('/withdraw', async (req, res) => {
+  try {
+    const { amount, upiId } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid amount is required' });
+    }
+    if (!upiId) {
+      return res.status(400).json({ success: false, message: 'UPI ID is required' });
+    }
+
+    const request = await walletService.createWithdrawalRequest(req.userId, amount, upiId);
+
+    res.json({
+      success: true,
+      data: request,
+      message: 'Withdrawal request submitted.',
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * Get user's wallet requests (History)
  * GET /api/wallet/requests
  */
 router.get('/requests', async (req, res) => {
@@ -80,5 +104,3 @@ router.get('/requests', async (req, res) => {
 });
 
 module.exports = router;
-
-

@@ -120,7 +120,7 @@ export default function HomePage() {
       )}
 
       {/* Hero Carousel Section - Mobile Optimized */}
-      <div className="relative rounded-xl md:rounded-2xl overflow-hidden mb-6 md:mb-12 h-[280px] md:h-[450px]">
+      <div className="relative rounded-xl md:rounded-2xl overflow-hidden mb-6 md:mb-12 h-[500px] md:h-[450px]">
         {/* Carousel Images */}
         {slides.map((slide, index) => {
           // Handle absolute URL vs relative path
@@ -137,80 +137,68 @@ export default function HomePage() {
                 src={imgUrl}
                 alt={slide.title || `Slide ${index + 1}`}
                 fill
-                className="object-contain md:object-cover"
+                className="object-cover md:object-cover sm:object-center" // Ensure cover works on mobile too
                 priority={index === 0}
               />
               {/* Dark overlay for better text readability */}
-              <div className="absolute inset-0 bg-black/50 md:bg-black/40"></div>
+              <div className="absolute inset-0 bg-black/60 md:bg-black/40"></div>
             </div>
           );
         })}
 
-        {/* Content Overlay - Only show if NO banners (Default) OR if banners have no custom content yet (MVP) 
-            For now, we overlay the static text ON TOP of the dynamic banner images too, 
-            unless we want the banner image to supply the text. 
-            Usually admins upload text-heavy banners. 
-            Let's hide the overlay text if it's a dynamic banner to be safe, or keep it generic.
-            Actually, let's keep the overlay but maybe optional? 
-            For now, I'll keep it as the user didn't ask to remove the "Play Games" text.
-         */}
-        <div className="relative z-10 h-full flex flex-col justify-center px-4 md:px-12 max-w-3xl pointer-events-none">
-          {/* ... existing text content ... */}
-          {/* Making buttons clickable by re-enabling pointer events */}
-          <div className="pointer-events-auto">
-            {/* ... */}
-          </div>
-        </div>
-
-        {/* Content Overlay (Restored mostly generic) */}
-        <div className="relative z-10 h-full flex flex-col justify-center px-4 md:px-12 max-w-3xl">
+        {/* Content Overlay */}
+        <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-12 max-w-4xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-white/10 border border-white/20 text-[10px] md:text-xs font-medium text-white mb-3 md:mb-4 w-fit backdrop-blur-sm">
-            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-400"></div>
-            New Game Available
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-[10px] md:text-sm font-bold text-red-500 mb-4 w-fit backdrop-blur-md shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            MOST POPULAR - LIVE NOW
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl md:text-6xl font-bold text-white mb-2 md:mb-4 leading-tight drop-shadow-lg">
-            Play <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">Games</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-3 md:mb-5 leading-none drop-shadow-2xl italic uppercase tracking-tighter">
+            Aviator <span className="text-red-600">Crash</span>
             <br />
-            Win Big Today!
+            <span className=" pr-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 animate-gradient-x">
+              Win 1000x
+            </span>
           </h1>
 
           {/* Description */}
-          <p className="text-xs md:text-lg text-white mb-4 md:mb-6 max-w-lg drop-shadow-md">
-            Experience the thrill of online gaming. Multiple games, big wins!
+          <p className="text-sm md:text-xl text-gray-200 mb-6 md:mb-8 max-w-lg drop-shadow-lg font-medium leading-relaxed">
+            The world's #1 crash game is here. Place your bet, watch the plane fly, and cash out before it crashes!
           </p>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full sm:w-auto">
             <Button
-              className="px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base flex items-center justify-center gap-2"
-              onClick={scrollToGames}
+              className="w-full sm:w-auto px-8 py-6 text-lg font-black bg-red-600 hover:bg-red-700 hover:scale-105 transition-all shadow-xl shadow-red-600/30 border-0 rounded-xl"
+              onClick={() => router.push('/aviator')}
             >
-              <Flame size={16} className="md:w-[18px] md:h-[18px]" />
-              Play Now
+              <div className="mr-2 text-2xl rotate-45">✈️</div>
+              PLAY AVIATOR
             </Button>
             <Button
               variant="outline"
-              className="px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base border-white/20 hover:bg-white/10 backdrop-blur-sm"
+              className="w-full sm:w-auto px-8 py-6 text-base font-bold border-white/20 hover:bg-white/10 backdrop-blur-md rounded-xl text-white"
+              onClick={scrollToGames}
             >
-              Learn How to Play
+              View All Games
             </Button>
           </div>
         </div>
 
         {/* Carousel Dots - Mobile Optimized */}
-        <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 md:gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-2 rounded-full transition-all touch-manipulation ${index === currentSlide ? 'bg-white w-5 md:w-6' : 'bg-white/50 w-2'
+              className={`h-1.5 rounded-full transition-all touch-manipulation shadow-sm ${index === currentSlide ? 'bg-red-500 w-8' : 'bg-white/30 w-2 hover:bg-white/50'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
+
         </div>
       </div>
 

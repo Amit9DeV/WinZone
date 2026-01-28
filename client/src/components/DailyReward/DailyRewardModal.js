@@ -24,7 +24,7 @@ export default function DailyRewardModal() {
     const checkRewardStatus = async () => {
         try {
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com/api';
-            const response = await fetch(`${API_URL}/rewards/status`, {
+            const response = await fetch(`${API_URL}/reward/status`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -44,7 +44,7 @@ export default function DailyRewardModal() {
         setClaiming(true);
         try {
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com/api';
-            const response = await fetch(`${API_URL}/rewards/claim`, {
+            const response = await fetch(`${API_URL}/reward/claim`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -19,8 +19,7 @@ export function ServerStatusProvider({ children }) {
 
     const checkServerHealth = async () => {
         try {
-            const SERVER_URL = 'https://winzone-final.onrender.com';
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || `${SERVER_URL}/api`;
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://winzone-final.onrender.com/api';
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
