@@ -21,7 +21,6 @@ const Bet = ({ index, add, setAdd }: BetProps) => {
 		currentNum,
 		currentSecondNum,
 		minBet, maxBet,
-		currentTarget,
 		update,
 		updateUserBetState
 	} = context;
@@ -188,7 +187,7 @@ const Bet = ({ index, add, setAdd }: BetProps) => {
 				}
 			}
 		}
-	}, [currentSecondNum, fbetted, sbetted, state.fautoCashoutState, state.sautoCashoutState, state.userInfo.f.target, state.userInfo.s.target])
+	}, [currentSecondNum, fbetted, sbetted, state.fautoCashoutState, state.sautoCashoutState, state.userInfo.f.target, state.userInfo.s.target, autoCashoutState, betted, cashOut, index, updateUserBetState])
 
 	useEffect(() => {
 		setMyBetAmount(betAmount);
