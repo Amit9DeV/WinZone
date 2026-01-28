@@ -15,7 +15,7 @@ const connectDB = async () => {
   }
 
   try {
-    const mongoURI = process.env.MONGO_URI;
+    const mongoURI = "mongodb+srv://kumararyanbhai90_db_user:OLWWaYG0UFYFlfJW@cluster0.ohypbqc.mongodb.net/WinZone?appName=Cluster0";
 
     if (!mongoURI) {
       throw new Error('MONGO_URI is not defined in environment variables');
